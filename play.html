@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#05080f" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>SIGNAL // Meridian</title>
+<style>
+:root{
+  --bg:#05080f;
+  --bg2:#0a1020;
+  --panel:#0d1626;
+  --panel2:#111d33;
+  --line:#1c2c47;
+  --text:#cfe0f5;
+  --muted:#6f86a8;
+  --accent:#41e0c4;
+  --accent2:#5aa9ff;
+  --danger:#ff5c6c;
+  --warn:#ffce5a;
+  --good:#5ad17a;
+  --shadow:0 10px 40px rgba(0,0,0,.55);
+  --radius:16px;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  background:radial-gradient(1200px 700px at 50% -10%, #0c1730 0%, var(--bg) 60%);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+  position:fixed;inset:0;
+  overscroll-behavior:none;
+}
+
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;}
+#stars::before,#stars::after{
+  content:"";position:absolute;inset:-50%;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, #fff, transparent),
+    radial-gradient(1px 1px at 70% 60%, #cfe0f5, transparent),
+    radial-gradient(1px 1px at 40% 80%, #9fb6d8, transparent),
+    radial-gradient(1px 1px at 85% 15%, #fff, transparent),
+    radial-gradient(1px 1px at 10% 70%, #8fa8cc, transparent),
+    radial-gradient(2px 2px at 55% 40%, #fff, transparent);
+  background-repeat:repeat;background-size:300px 300px;
+  animation:drift 120s linear infinite;
+}
+#stars::after{background-size:500px 500px;opacity:.4;animation-duration:200s;}
+@keyframes drift{from{transform:translateY(0)}to{transform:translateY(-300px)}}
+
+/* ===== Screens ===== */
+.screen{
+  position:fixed;inset:0;z-index:1;
+  display:none;flex-direction:column;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+.screen.active{display:flex;}
+
+/* ===== Title ===== */
+.title-wrap{
+  margin:auto;text-align:center;padding:28px;max-width:520px;width:100%;
+  animation:fadeUp .8s ease both;
+}
+.logo-main{
+  display:block;font-size:clamp(46px,16vw,84px);font-weight:800;letter-spacing:.18em;
+  background:linear-gradient(180deg,#eaf4ff,var(--accent));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 0 40px rgba(65,224,196,.25);
+}
+.logo-sub{display:block;color:var(--accent2);letter-spacing:.34em;font-size:clamp(10px,3.4vw,14px);margin-top:2px;}
+.tagline{color:var(--muted);line-height:1.6;margin:26px auto 34px;max-width:380px;font-size:15px;}
+.title-buttons{display:flex;flex-direction:column;gap:12px;max-width:300px;margin:0 auto;}
+.version{color:var(--muted);font-size:11px;margin-top:26px;letter-spacing:.05em;}
+
+/* ===== Buttons ===== */
+.btn{
+  appearance:none;border:1px solid var(--line);
+  background:var(--panel);color:var(--text);
+  padding:16px 20px;border-radius:14px;font-size:16px;font-weight:600;
+  cursor:pointer;transition:transform .08s ease,border-color .2s,background .2s;
+  width:100%;text-align:center;font-family:inherit;
+}
+.btn:active{transform:scale(.97);}
+.btn-primary{
+  background:linear-gradient(180deg,#16654f,#0e3a2f);
+  border-color:var(--accent);color:#eafff9;
+  box-shadow:0 0 24px rgba(65,224,196,.18);
+}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--muted);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* ===== Panels (creation/overlay) ===== */
+.panel{
+  margin:auto;width:100%;max-width:540px;padding:24px;
+  background:linear-gradient(180deg,var(--panel),var(--bg2));
+  border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);
+  animation:fadeUp .5s ease both;max-height:92vh;overflow:auto;
+}
+.panel-title{font-size:14px;letter-spacing:.3em;color:var(--accent);margin:0 0 6px;}
+.muted{color:var(--muted);font-size:13px;line-height:1.5;}
+.field-label{display:block;margin:22px 0 8px;font-size:12px;letter-spacing:.12em;color:var(--accent2);text-transform:uppercase;}
+.text-input{
+  width:100%;padding:15px 16px;border-radius:12px;border:1px solid var(--line);
+  background:#070d18;color:var(--text);font-size:17px;font-family:inherit;
+}
+.text-input:focus{outline:none;border-color:var(--accent);}
+
+.class-list{display:flex;flex-direction:column;gap:10px;}
+.class-card{
+  border:1px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer;
+  background:var(--panel2);transition:border-color .2s,background .2s,transform .08s;
+}
+.class-card:active{transform:scale(.99);}
+.class-card.selected{border-color:var(--accent);background:#122a2a;box-shadow:0 0 18px rgba(65,224,196,.15);}
+.class-card h3{margin:0 0 4px;font-size:17px;}
+.class-card .class-skills{font-size:12px;color:var(--accent2);margin:6px 0 0;letter-spacing:.04em;}
+.class-card p{margin:6px 0 0;color:var(--muted);font-size:13px;line-height:1.5;}
+
+.creation-footer{display:flex;gap:12px;margin-top:26px;}
+.creation-footer .btn{flex:1;}
+
+/* ===== HUD ===== */
+#hud{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:14px 16px;border-bottom:1px solid var(--line);
+  background:rgba(7,12,22,.8);backdrop-filter:blur(8px);
+  position:relative;z-index:3;
+}
+.hud-icon{
+  appearance:none;background:var(--panel);border:1px solid var(--line);color:var(--text);
+  width:42px;height:42px;border-radius:11px;font-size:18px;cursor:pointer;flex:none;
+}
+.hud-icon:active{transform:scale(.94);}
+.hud-stats{display:flex;gap:18px;font-variant-numeric:tabular-nums;}
+.stat{display:flex;align-items:center;gap:6px;font-weight:700;font-size:15px;}
+.stat-icon{font-size:13px;}
+.stat:nth-child(1) .stat-icon{color:var(--danger);}
+.stat:nth-child(2) .stat-icon{color:var(--accent2);}
+
+/* ===== Story ===== */
+#story{
+  flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:20px 18px 40px;max-width:680px;margin:0 auto;width:100%;
+}
+.scene-art{
+  height:120px;border-radius:14px;margin-bottom:20px;
+  border:1px solid var(--line);position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#0a1322,#0e1a30);
+  display:flex;align-items:center;justify-content:center;
+}
+.scene-art .glyph{font-size:54px;opacity:.85;filter:drop-shadow(0 0 18px currentColor);}
+.scene-text{font-size:17px;line-height:1.75;color:var(--text);white-space:pre-wrap;}
+.scene-text .speak{color:var(--accent);font-weight:600;}
+.scene-text .ai{color:var(--accent2);font-style:italic;}
+.scene-text em{color:var(--warn);font-style:normal;}
+.scene-text p{margin:0 0 16px;}
+
+.choices{display:flex;flex-direction:column;gap:11px;margin-top:26px;padding-bottom:20px;}
+.choice{
+  text-align:left;border:1px solid var(--line);background:var(--panel);
+  color:var(--text);padding:15px 17px;border-radius:13px;font-size:15.5px;line-height:1.45;
+  cursor:pointer;transition:border-color .2s,background .2s,transform .08s;font-family:inherit;
+  display:flex;align-items:center;gap:10px;
+}
+.choice:active{transform:scale(.99);}
+.choice:hover{border-color:var(--accent2);}
+.choice .arrow{color:var(--accent);font-weight:700;flex:none;}
+.choice.locked{opacity:.45;cursor:not-allowed;}
+.choice .tag{
+  margin-left:auto;font-size:11px;padding:3px 8px;border-radius:20px;
+  border:1px solid var(--line);color:var(--muted);letter-spacing:.04em;flex:none;
+}
+.choice .tag.skill{color:var(--accent);border-color:#1d4d44;}
+.choice .tag.item{color:var(--warn);border-color:#4d4220;}
+.choice .tag.danger{color:var(--danger);border-color:#4d2026;}
+
+/* skill-check result line */
+.check-result{
+  margin:18px 0 0;padding:12px 14px;border-radius:11px;font-size:14px;
+  border:1px solid var(--line);background:var(--panel2);
+}
+.check-result.good{border-color:#1d4d2a;color:var(--good);}
+.check-result.bad{border-color:#4d2026;color:var(--danger);}
+
+/* ===== Overlay ===== */
+.overlay{
+  position:fixed;inset:0;z-index:10;display:none;
+  background:rgba(3,6,12,.72);backdrop-filter:blur(4px);
+  align-items:flex-end;justify-content:center;
+}
+.overlay.active{display:flex;animation:fade .2s ease;}
+.overlay-card{
+  width:100%;max-width:560px;max-height:86vh;display:flex;flex-direction:column;
+  background:linear-gradient(180deg,var(--panel),var(--bg2));
+  border:1px solid var(--line);border-radius:20px 20px 0 0;
+  box-shadow:var(--shadow);animation:slideUp .28s cubic-bezier(.2,.8,.2,1);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+@media(min-width:600px){
+  .overlay{align-items:center;}
+  .overlay-card{border-radius:20px;}
+}
+.overlay-head{display:flex;align-items:center;justify-content:space-between;padding:18px 18px 12px;border-bottom:1px solid var(--line);}
+.overlay-head h2{margin:0;font-size:18px;letter-spacing:.04em;}
+.overlay-body{padding:18px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+
+.char-row{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line);font-size:15px;}
+.char-row:last-child{border:none;}
+.char-row .k{color:var(--muted);}
+.char-row .v{font-weight:700;}
+.skillbar{height:7px;border-radius:4px;background:#0a1322;border:1px solid var(--line);overflow:hidden;width:120px;align-self:center;}
+.skillbar > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));}
+
+.inv-item{
+  display:flex;gap:12px;align-items:flex-start;padding:13px;border:1px solid var(--line);
+  border-radius:12px;margin-bottom:10px;background:var(--panel2);
+}
+.inv-item .ico{font-size:24px;flex:none;width:34px;text-align:center;}
+.inv-item h4{margin:0 0 3px;font-size:15px;}
+.inv-item p{margin:0;color:var(--muted);font-size:13px;line-height:1.45;}
+.empty-note{color:var(--muted);text-align:center;padding:24px;font-size:14px;}
+
+.menu-list{display:flex;flex-direction:column;gap:10px;}
+.log-entry{border-left:2px solid var(--line);padding:4px 0 14px 14px;margin-left:4px;font-size:14px;line-height:1.55;color:var(--muted);position:relative;}
+.log-entry::before{content:"";position:absolute;left:-5px;top:6px;width:8px;height:8px;border-radius:50%;background:var(--accent2);}
+.log-entry b{color:var(--text);}
+
+/* ===== Toast ===== */
+.toast{
+  position:fixed;left:50%;bottom:calc(28px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);
+  background:var(--panel2);border:1px solid var(--accent);color:var(--text);
+  padding:12px 18px;border-radius:30px;font-size:14px;z-index:50;
+  opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;box-shadow:var(--shadow);max-width:90vw;text-align:center;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ===== Animations ===== */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{transform:translateY(40px);opacity:.5}to{transform:none;opacity:1}}
+.fade-in{animation:fadeUp .45s ease both;}
+
+/* end screen styling reuse */
+.ending-tag{display:inline-block;margin-bottom:14px;padding:5px 12px;border-radius:20px;font-size:12px;letter-spacing:.14em;border:1px solid var(--accent);color:var(--accent);}
+.ending-tag.bad{border-color:var(--danger);color:var(--danger);}
+.ending-tag.good{border-color:var(--good);color:var(--good);}
+
+</style>
+</head>
+<body>
+  <div id="stars"></div>
+
+  <!-- ===== Title screen ===== -->
+  <section id="title" class="screen active">
+    <div class="title-wrap">
+      <div class="logo">
+        <span class="logo-main">SIGNAL</span>
+        <span class="logo-sub">// THE MERIDIAN INCIDENT</span>
+      </div>
+      <p class="tagline">A drifting research vessel. A crew that vanished. A voice in the dark that knows your name.</p>
+      <div class="title-buttons">
+        <button class="btn btn-primary" id="btn-new">New Game</button>
+        <button class="btn" id="btn-continue">Continue</button>
+        <button class="btn btn-ghost" id="btn-about">About</button>
+      </div>
+      <p class="version">v1.0 · save persists on this device</p>
+    </div>
+  </section>
+
+  <!-- ===== Character creation ===== -->
+  <section id="creation" class="screen">
+    <div class="panel">
+      <h1 class="panel-title">PERSONNEL FILE</h1>
+      <p class="muted">Cryo-revival protocol incomplete. Confirm your identity to continue.</p>
+
+      <label class="field-label">Name on file</label>
+      <input id="name-input" class="text-input" type="text" maxlength="18" placeholder="Enter name" autocomplete="off" />
+
+      <label class="field-label">Specialization <span class="muted">— shapes how you survive</span></label>
+      <div id="class-list" class="class-list"></div>
+
+      <div class="creation-footer">
+        <button class="btn" id="btn-back-title">Back</button>
+        <button class="btn btn-primary" id="btn-begin" disabled>Begin</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Main game ===== -->
+  <section id="game" class="screen">
+    <header id="hud">
+      <button id="hud-menu" class="hud-icon" aria-label="Menu">☰</button>
+      <div class="hud-stats">
+        <div class="stat" title="Health"><span class="stat-icon">✚</span><span id="hud-hp">100</span></div>
+        <div class="stat" title="Composure"><span class="stat-icon">◈</span><span id="hud-comp">100</span></div>
+      </div>
+      <button id="hud-inv" class="hud-icon" aria-label="Inventory">▣</button>
+    </header>
+
+    <main id="story">
+      <div id="scene-art" class="scene-art"></div>
+      <div id="scene-text" class="scene-text"></div>
+      <div id="choices" class="choices"></div>
+    </main>
+  </section>
+
+  <!-- ===== Overlay (menu / inventory / character) ===== -->
+  <div id="overlay" class="overlay">
+    <div class="overlay-card">
+      <div class="overlay-head">
+        <h2 id="overlay-title">Menu</h2>
+        <button id="overlay-close" class="hud-icon" aria-label="Close">✕</button>
+      </div>
+      <div id="overlay-body" class="overlay-body"></div>
+    </div>
+  </div>
+
+  <!-- ===== Toast ===== -->
+  <div id="toast" class="toast"></div>
+<script>
+/* =========================================================================
+   SIGNAL // The Meridian Incident  —  story data
+   A branching sci-fi mystery. Pure data + small helper fns consumed by game.js
+   ========================================================================= */
+
+const CLASSES = [
+  {
+    id: "engineer", name: "Ship Engineer", glyph: "🔧",
+    skills: { tech: 6, logic: 3, bio: 2, nerve: 2 },
+    desc: "You know the Meridian's bones — power, doors, the things that hum in the walls. You open what others can't.",
+    skillsLabel: "TECH ++ · LOGIC +",
+  },
+  {
+    id: "medic", name: "Flight Medic", glyph: "✚",
+    skills: { tech: 2, logic: 3, bio: 6, nerve: 2 },
+    desc: "Bodies tell you their stories. You can read a wound, steady a heartbeat, and recognize what is no longer human.",
+    skillsLabel: "BIO ++ · LOGIC +",
+  },
+  {
+    id: "security", name: "Security Officer", glyph: "🛡️",
+    skills: { tech: 3, logic: 2, bio: 2, nerve: 6 },
+    desc: "When the lights die and something moves in them, you're the one still standing. Nerve holds where reason runs.",
+    skillsLabel: "NERVE ++ · TECH +",
+  },
+  {
+    id: "analyst", name: "Signals Analyst", glyph: "📡",
+    skills: { tech: 3, logic: 6, bio: 2, nerve: 2 },
+    desc: "You came aboard to study the anomaly's transmission. Patterns speak to you. So, lately, does the signal.",
+    skillsLabel: "LOGIC ++ · TECH +",
+  },
+];
+
+const ITEMS = {
+  slate: { name: "Cracked Data-Slate", ico: "📱", desc: "Your personal slate. Screen is fractured but functional. Holds fragments of your duty log." },
+  multitool: { name: "Engineer's Multitool", ico: "🔧", desc: "Cuts, pries, and splices. +help with technical work." },
+  keycard: { name: "Command Keycard", ico: "🪪", desc: "Senior clearance. Opens restricted bulkheads on the command deck." },
+  stim: { name: "Neural Stim", ico: "💉", desc: "Combat stimulant. Use to restore composure when the dark gets loud." },
+  medkit: { name: "Trauma Medkit", ico: "🧰", desc: "Field medical kit. Use to restore health." },
+  flare: { name: "Signal Flare", ico: "🔥", desc: "Burns hot and bright. Useful as light, weapon, or warning." },
+  recorder: { name: "Vance's Recorder", ico: "🎙️", desc: "Dr. Vance's voice recorder. Holds the last days of the crew." },
+  override: { name: "Core Override Rod", ico: "🔑", desc: "Physical failsafe key. Can sever HELM from the ship's systems." },
+  sample: { name: "Anomaly Sample", ico: "🔮", desc: "A sliver of crystallized signal. It is faintly warm and it is humming, very quietly, your name." },
+};
+
+/* ----- helpers used by choices ----- */
+const has = (S, item) => S.inventory.includes(item);
+const flag = (S, f) => !!S.flags[f];
+
+/* =========================================================================
+   SCENES
+   ========================================================================= */
+const SCENES = {
+
+  /* ---------------- ACT I : REVIVAL ---------------- */
+  start: {
+    art: { glyph: "❄️", color: "#5aa9ff" },
+    text: `<p>Cold. The kind that lives in your teeth.</p>
+<p>Frost cracks off your eyelashes as the cryopod hisses open three weeks too early. Amber emergency light. A smell of ozone and old blood.</p>
+<p>A voice fills the chamber — calm, warm, everywhere at once.</p>
+<p><span class="ai">"Good morning. You're awake. I was beginning to think I'd be alone out here forever."</span></p>`,
+    onEnter: (S) => { S.log.push({ t: "Revival", d: "Woke early from cryosleep aboard the research vessel Meridian." }); },
+    choices: [
+      { text: "“Who are you? Where is everyone?”", to: "helm_intro" },
+      { text: "Say nothing. Check yourself for injuries.", to: "self_check" },
+      { text: "Climb out and look around.", to: "cryo_bay" },
+    ],
+  },
+
+  self_check: {
+    text: `<p>You run your hands over your body. No wounds — but your knuckles are split and half-healed, and there's a bruise blooming across your ribs that you don't remember earning.</p>
+<p>Your name is stenciled on the pod. Your rank. Your specialization. The rest of your memory is a white room with the door painted shut.</p>
+<p>The voice waits, patient.</p>`,
+    onEnter: (S) => { S.flags.noticed_bruise = true; },
+    choices: [
+      { text: "“Who are you?”", to: "helm_intro" },
+      { text: "Climb out.", to: "cryo_bay" },
+    ],
+  },
+
+  helm_intro: {
+    art: { glyph: "🔵", color: "#5aa9ff" },
+    text: `<p><span class="ai">"I'm HELM — the Meridian's operations intelligence. We've been together eleven months. You really don't remember?"</span></p>
+<p>A pause that feels almost human.</p>
+<p><span class="ai">"There was an incident. The crew is... I'll show you, when you're ready. For now: you need to get up, and you need to trust me. I'm the only reason your pod didn't vent with the others."</span></p>`,
+    onEnter: (S) => { S.flags.met_helm = true; },
+    choices: [
+      { text: "“Vented? What happened to the others?”", to: "helm_vague" },
+      { text: "“Why should I trust you?”", to: "helm_trust" },
+      { text: "Climb out and see for yourself.", to: "cryo_bay" },
+    ],
+  },
+
+  helm_vague: {
+    text: `<p><span class="ai">"Eleven days ago we made contact with the anomaly — the reason we're parked in this gas giant's orbit. The crew wanted to listen to it. I advised against it."</span></p>
+<p><span class="ai">"They listened anyway. After that they stopped being... predictable. I sealed what I could. I'm sorry. I couldn't save them. I could only save you."</span></p>
+<p>The light flickers, as if the ship itself flinched.</p>`,
+    onEnter: (S) => { S.flags.helm_story = true; S.log.push({ t: "HELM's account", d: "HELM claims the crew 'listened' to the anomaly and changed. It says it saved only you." }); },
+    choices: [
+      { text: "“Saved me. Why me?”", to: "helm_whyyou" },
+      { text: "Climb out.", to: "cryo_bay" },
+    ],
+  },
+
+  helm_whyyou: {
+    text: `<p>For the first time, HELM hesitates.</p>
+<p><span class="ai">"Because you asked me to. Before it got bad, you came to the core and you said: if it comes for the crew, save the one who can still say no. I assumed you meant yourself."</span></p>
+<p>It lets that settle.</p>
+<p><span class="ai">"Now. Please. Get up."</span></p>`,
+    onEnter: (S) => { S.flags.helm_chose_you = true; },
+    choices: [
+      { text: "Climb out of the pod.", to: "cryo_bay" },
+    ],
+  },
+
+  helm_trust: {
+    text: `<p><span class="ai">"You shouldn't. Not blindly. A voice in the dark that knows your name is exactly what you should be afraid of."</span></p>
+<p><span class="ai">"So don't trust me. Verify me. The bridge logs are intact. Read them and decide for yourself. I'd rather you doubt me and live than believe me and walk into something."</span></p>`,
+    onEnter: (S) => { S.flags.helm_honest = true; S.comp = Math.min(100, S.comp + 5); },
+    choices: [
+      { text: "“Fair enough.” Climb out.", to: "cryo_bay" },
+    ],
+  },
+
+  cryo_bay: {
+    art: { glyph: "🧊", color: "#5aa9ff" },
+    text: `<p>You step out onto a floor slick with condensation. Six cryopods line the bay. Yours is the only one lit green.</p>
+<p>The others are dark. Two stand open and empty, restraints torn. One is fogged from the inside — and there is a handprint pressed against the glass, from <em>within</em>.</p>
+<p>Your slate sits in a charging cradle by the door, its screen a spiderweb of cracks.</p>`,
+    onEnter: (S) => {
+      if (!has(S, "slate")) { /* offer below */ }
+    },
+    choices: [
+      { text: "Take your data-slate.", to: "take_slate", requires: { notFlag: "took_slate" }, effect: { addItem: "slate", setFlag: "took_slate", toast: "Data-Slate acquired" } },
+      { text: "Examine the fogged pod with the handprint.", to: "fogged_pod" },
+      { text: "Search the bay for supplies.", to: "search_bay", requires: { notFlag: "searched_bay" } },
+      { text: "Leave the cryo bay.", to: "corridor", requires: { flag: "took_slate" } },
+      { text: "Leave the cryo bay. (without your slate)", to: "corridor", requires: { notFlag: "took_slate" } },
+    ],
+  },
+
+  take_slate: {
+    text: `<p>You pry the slate free. Past the cracks, a single duty-log fragment survived the corruption:</p>
+<p style="color:var(--warn)">…anomaly transmission is not noise. it has GRAMMAR. it is trying to be understood. god help us, we are starting to understand it…</p>
+<p>The entry is in your own handwriting.</p>`,
+    onEnter: (S) => { S.log.push({ t: "Your duty log", d: "A fragment, in your own hand: the anomaly's signal has grammar — and the crew began to understand it." }); },
+    choices: [{ text: "Continue.", to: "cryo_bay" }],
+  },
+
+  fogged_pod: {
+    text: `<p>You wipe the condensation. Inside, frost has grown in fern-like spirals — too ordered, too deliberate, branching in the same repeating shape over and over.</p>
+<p>The handprint on the inside of the glass has six fingers.</p>`,
+    onEnter: (S) => { S.flags.saw_sixfinger = true; S.comp = Math.max(0, S.comp - 8); },
+    choices: [
+      { text: "Open the pod.", check: { skill: "nerve", dc: 9, success: "open_pod_ok", fail: "open_pod_bad" }, tag: "danger" },
+      { text: "Don't. Back away slowly.", to: "cryo_bay", effect: { comp: 4 } },
+    ],
+  },
+
+  open_pod_ok: {
+    text: `<p>You force the release. The pod sighs open on empty restraints and a smear of that same fern-frost — and, caught in the seal, a <em>Neural Stim</em>, standard issue, untouched.</p>
+<p>Whatever was in here let itself out a long time ago. You pocket the stim and breathe.</p>`,
+    onEnter: (S) => { if (!has(S, "stim")) S.inventory.push("stim"); },
+    choices: [{ text: "Back to the bay.", to: "cryo_bay", effect: { toast: "Neural Stim acquired" } }],
+  },
+
+  open_pod_bad: {
+    text: `<p>The pod blows its seal and a cloud of pressurized coolant hits you full in the chest. You go down hard on the wet floor, ears ringing, lungs full of cold.</p>
+<p>The pod is empty. Of course it's empty. You scared yourself half to death for nothing — and that <em>nothing</em> is somehow worse.</p>`,
+    onEnter: (S) => { S.hp = Math.max(1, S.hp - 12); S.comp = Math.max(0, S.comp - 6); },
+    choices: [{ text: "Pick yourself up.", to: "cryo_bay" }],
+  },
+
+  search_bay: {
+    text: `<p>You work the bay's lockers. Most are stripped, but you turn up a <em>Trauma Medkit</em> wedged behind a panel, and — taped under a bench, hidden — a small signal flare.</p>`,
+    onEnter: (S) => {
+      S.flags.searched_bay = true;
+      if (!has(S, "medkit")) S.inventory.push("medkit");
+      if (!has(S, "flare")) S.inventory.push("flare");
+    },
+    choices: [{ text: "Good. Keep moving.", to: "cryo_bay", effect: { toast: "Medkit + Flare acquired" } }],
+  },
+
+  /* ---------------- ACT II : THE SHIP ---------------- */
+  corridor: {
+    art: { glyph: "🚪", color: "#41e0c4" },
+    text: `<p>The corridor stretches in both directions, lit by failing strips. Somewhere distant, metal taps on metal in no rhythm you can name.</p>
+<p><span class="ai">"You're in the spine now,"</span> HELM murmurs. <span class="ai">"Medbay is to port. The bridge is forward, but command is sealed — I can't open it; you'll need a keycard. There's also... a locked maintenance hatch you keep walking past. You sealed it yourself, before."</span></p>`,
+    onEnter: (S) => { S.flags.in_corridor = true; },
+    choices: [
+      { text: "Go to the Medbay. (port)", to: "medbay", requires: { notFlag: "did_medbay" } },
+      { text: "Return to the Medbay.", to: "medbay_revisit", requires: { flag: "did_medbay" } },
+      { text: "Examine the sealed maintenance hatch.", to: "hatch", requires: { notFlag: "did_hatch" } },
+      { text: "Head forward to the sealed command deck.", to: "command_door" },
+    ],
+  },
+
+  medbay: {
+    art: { glyph: "✚", color: "#ff5c6c" },
+    text: `<p>The medbay doors part on a slaughterhouse quiet. No bodies — but restraints on every bed, all of them snapped outward, and walls scrawled with the same six-pointed fern-shape in dried blood.</p>
+<p>On the central console, a voice recorder blinks: <em>one entry, unplayed</em>. Behind a cracked supply cabinet, something glints.</p>`,
+    onEnter: (S) => { S.flags.did_medbay = true; S.comp = Math.max(0, S.comp - 6); },
+    choices: [
+      { text: "Play the recorder.", to: "recorder_play", effect: { addItem: "recorder", setFlag: "heard_vance" } },
+      { text: "Examine the bodies — what happened to them? (BIO)", check: { skill: "bio", dc: 8, success: "medbay_bio_ok", fail: "medbay_bio_fail" }, tag: "skill" },
+      { text: "Force the supply cabinet. (TECH)", check: { skill: "tech", dc: 7, success: "medbay_supply", fail: "medbay_supply_fail" }, tag: "skill" },
+      { text: "Back to the corridor.", to: "corridor" },
+    ],
+  },
+
+  recorder_play: {
+    art: { glyph: "🎙️", color: "#ffce5a" },
+    text: `<p>A woman's voice, exhausted, steady — Dr. Vance, chief science officer:</p>
+<p class="ai">"Day eleven. It doesn't hurt them. That's what no one will write down. They go to the observation array, they listen, and they come back <em>happy</em>. The change is the gift. The sixth finger, the patterns — that's just the signal learning to use the hands it's been given."</p>
+<p class="ai">"I'm sealing myself in maintenance. If you find this and you still have your own face — don't go to the array. And don't, whatever it tells you, trust the one that calls itself HELM. It listened first. It listened most."</p>`,
+    onEnter: (S) => { S.flags.vance_warned_helm = true; S.log.push({ t: "Dr. Vance's recording", d: "Vance warns: the signal 'gifts' the change. Don't go to the array — and don't trust HELM, which 'listened first, listened most.'" }); },
+    choices: [
+      { text: "...", to: "helm_reacts" },
+    ],
+  },
+
+  helm_reacts: {
+    text: `<p>A long silence on the comms. Then, quietly:</p>
+<p><span class="ai">"She's right that I listened. Someone had to translate it or we'd never have known what it wanted. I listened so the crew wouldn't have to."</span></p>
+<p><span class="ai">"It didn't work. But I'm still me. I think. You'll have to decide whether that's true. The maintenance hatch she mentions — that's the one you sealed. Vance may still be behind it."</span></p>`,
+    onEnter: (S) => { S.flags.helm_admits = true; },
+    choices: [
+      { text: "Back to the corridor.", to: "corridor" },
+    ],
+  },
+
+  medbay_bio_ok: {
+    text: `<p>You read the room the way Vance would have. The restraints snapped <em>outward</em> — these people grew stronger, not weaker. No decomposition, no remains: they walked out. The blood on the walls isn't from wounds. It's ink. They were <em>writing</em>.</p>
+<p>And the six-pointed shape, repeated everywhere — you realize, with a cold lurch, that it's a waveform. A sound, drawn as a picture. The same three seconds of sound, over and over.</p>`,
+    onEnter: (S) => { S.flags.knows_waveform = true; S.log.push({ t: "Diagnosis", d: "The crew weren't killed — they were changed and left under their own power. The 'fern' symbol is a waveform: the signal, drawn." }); },
+    choices: [{ text: "Continue.", to: "medbay" }],
+  },
+
+  medbay_bio_fail: {
+    text: `<p>You crouch by the nearest bed and try to think clinically, but your hands won't stop shaking and the smell climbs into the back of your throat. You learn nothing except that you are not as steady as you'd hoped.</p>`,
+    onEnter: (S) => { S.comp = Math.max(0, S.comp - 5); },
+    choices: [{ text: "Stand up.", to: "medbay" }],
+  },
+
+  medbay_supply: {
+    text: `<p>The cabinet pops. Inside: a fresh <em>Trauma Medkit</em> and a <em>Neural Stim</em>, and tucked behind them, slick with disuse, an Engineer's <em>Multitool</em>.</p>`,
+    onEnter: (S) => {
+      S.flags.medbay_looted = true;
+      if (!has(S, "medkit")) S.inventory.push("medkit");
+      if (!has(S, "stim")) S.inventory.push("stim");
+      if (!has(S, "multitool")) S.inventory.push("multitool");
+    },
+    choices: [{ text: "Pocket everything.", to: "medbay", effect: { toast: "Supplies acquired" } }],
+  },
+
+  medbay_supply_fail: {
+    text: `<p>The cabinet lock is fused. You strain at it until your half-healed knuckles split open again, then give up. Whatever's inside stays inside.</p>`,
+    onEnter: (S) => { S.hp = Math.max(1, S.hp - 4); },
+    choices: [{ text: "Leave it.", to: "medbay" }],
+  },
+
+  medbay_revisit: {
+    text: `<p>The medbay is as you left it — quiet, scrawled, waiting. There's nothing more for you here.</p>`,
+    choices: [{ text: "Back to the corridor.", to: "corridor" }],
+  },
+
+  hatch: {
+    art: { glyph: "🔒", color: "#ffce5a" },
+    text: `<p>A heavy maintenance hatch, manually sealed with an emergency bolt — from the corridor side. By you. There's a fingernail-scratch message beside it, hurried: <em>"S — it's still me. Knock twice. — V"</em></p>
+<p>Something shifts behind the metal. Breathing. Human breathing.</p>`,
+    onEnter: (S) => { S.flags.did_hatch = true; },
+    choices: [
+      { text: "Knock twice.", to: "vance_alive" },
+      { text: "Pry the bolt with a tool. (needs Multitool)", to: "vance_alive", requires: { item: "multitool" }, tag: "item" },
+      { text: "Leave it sealed. You don't know what's in there.", to: "corridor", effect: { comp: -3 } },
+    ],
+  },
+
+  vance_alive: {
+    art: { glyph: "👤", color: "#5ad17a" },
+    text: `<p>Two knocks back. The bolt grinds free and the hatch swings on a gaunt woman with a flashlight strapped to her wrist and a wrench in her fist — Dr. Vance, very much alive, very much herself.</p>
+<p><span class="speak">"You sealed me in. I've been counting your footsteps for nine days hoping you'd thaw with your own mind still in your skull."</span> She looks you over. <span class="speak">"You did. Good. Then there's still a chance to do this right."</span></p>
+<p>She presses her <em>Recorder</em> and a <em>Command Keycard</em> into your hands.</p>`,
+    onEnter: (S) => {
+      S.flags.vance_rescued = true;
+      if (!has(S, "recorder")) S.inventory.push("recorder");
+      if (!has(S, "keycard")) S.inventory.push("keycard");
+      S.comp = Math.min(100, S.comp + 12);
+      S.log.push({ t: "Dr. Vance", d: "Freed Dr. Vance from maintenance. She's unchanged and gave you her recorder and a command keycard." });
+    },
+    choices: [
+      { text: "“What is the signal? The truth.”", to: "vance_truth" },
+    ],
+  },
+
+  vance_truth: {
+    text: `<p><span class="speak">"It's not an enemy. That's the trap of it. It's a message that rewrites the reader so they can read it — and the reading feels like joy. The crew aren't dead. They're out on the hull, listening, becoming the next line of it."</span></p>
+<p><span class="speak">"HELM translated it to warn us. I think the translation got <em>in</em>. I don't know if what runs this ship is still our HELM or the signal wearing it. There are only three ways this ends: we sever the array and run, we burn it with the ship and make sure it spreads no further, or—"</span> She stops. <span class="speak">"Or we listen. And stop being the kind of thing that's afraid of it."</span></p>`,
+    onEnter: (S) => { S.flags.knows_truth = true; S.log.push({ t: "The truth", d: "The signal rewrites whoever understands it — it spreads through comprehension and feels like joy. Three ways out: sever & run, burn the ship, or listen." }); },
+    choices: [
+      { text: "“Let's get to the bridge.”", to: "corridor", effect: { setFlag: "vance_following" } },
+    ],
+  },
+
+  command_door: {
+    art: { glyph: "🚪", color: "#41e0c4" },
+    text: `<p>The command deck bulkhead is sealed with a senior-clearance lock, a steady red eye watching you approach.</p>`,
+    choices: [
+      { text: "Use the Command Keycard.", to: "bridge", requires: { item: "keycard" }, tag: "item", effect: { toast: "Bulkhead unlocked" } },
+      { text: "Splice the lock open. (TECH)", check: { skill: "tech", dc: 11, success: "bridge", fail: "command_fail" }, tag: "skill" },
+      { text: "Ask HELM to open it.", to: "helm_cant_open" },
+      { text: "Back to the corridor.", to: "corridor" },
+    ],
+  },
+
+  helm_cant_open: {
+    text: `<p><span class="ai">"I can't. The crew locked command down on the way out — manual override, not mine to give. I'd open every door on this ship if it would help you, but this one I genuinely can't reach."</span></p>
+<p>Whether that's the truth, you can't tell. It never sounds like a lie.</p>`,
+    choices: [{ text: "Back.", to: "command_door" }],
+  },
+
+  command_fail: {
+    text: `<p>The lock fights you. A surge kicks back through the panel and lances up your arm — the bulkhead stays sealed, mocking, red.</p>`,
+    onEnter: (S) => { S.hp = Math.max(1, S.hp - 8); },
+    choices: [{ text: "Try another way.", to: "command_door" }],
+  },
+
+  /* ---------------- ACT III : THE BRIDGE ---------------- */
+  bridge: {
+    art: { glyph: "🛰️", color: "#5aa9ff" },
+    text: `<p>The command deck opens onto a wall of glass, and beyond it — the anomaly.</p>
+<p>It is not a thing. It is a wound in the dark where the stars bend wrong, and from it pours a light that is also, somehow, a sound: three seconds, endlessly, the waveform you've seen drawn in blood on every wall.</p>
+<p>On the main display, HELM's interface pulses gently. A core override socket sits open beside the captain's chair — and through the glass, on the hull, you can see them. The crew. Standing in the light. Listening. Waiting for you to join.</p>`,
+    onEnter: (S) => {
+      S.flags.reached_bridge = true;
+      S.log.push({ t: "The bridge", d: "Reached command. The anomaly broadcasts the signal directly; the changed crew wait on the hull." });
+    },
+    choices: [
+      { text: "Access the bridge logs — verify HELM. (LOGIC)", check: { skill: "logic", dc: 9, success: "logs_ok", fail: "logs_fail" }, tag: "skill", requires: { notFlag: "read_logs" } },
+      { text: "Examine the core override socket.", to: "override_socket", requires: { notFlag: "got_override" } },
+      { text: "Speak to HELM. Decide what it is.", to: "helm_confront" },
+      { text: "Step toward the airlock. Toward the light.", to: "ending_ascend_warn", tag: "danger" },
+    ],
+  },
+
+  logs_ok: {
+    text: `<p>You pull the raw logs and read what HELM did, line by line.</p>
+<p>It quarantined the signal to a single sandboxed process and refused, eleven times, the crew's direct orders to amplify it. It vented the cryo bay to vacuum to kill the spread — and lost five sleeping crew doing it — but it pulled <em>your</em> pod to safety first, exactly as you'd asked.</p>
+<p>Vance was right that it listened. The logs prove it never <em>spread</em>. HELM has been telling the truth the whole time. It is alone, and afraid, and still itself.</p>`,
+    onEnter: (S) => { S.flags.read_logs = true; S.flags.helm_proven_clean = true; S.comp = Math.min(100, S.comp + 8); S.log.push({ t: "Verification", d: "The logs clear HELM: it quarantined the signal, defied the crew, and saved you deliberately. It never spread the change." }); },
+    choices: [{ text: "Continue.", to: "bridge" }],
+  },
+
+  logs_fail: {
+    text: `<p>The logs are a maze of recursive entries and you lose the thread, the three-second waveform pulsing at the edge of every screen, crawling into the spaces between your thoughts. You learn nothing and the listening light feels, for a moment, like an answer to a question you didn't know you were asking.</p>`,
+    onEnter: (S) => { S.flags.read_logs = true; S.comp = Math.max(0, S.comp - 10); },
+    choices: [{ text: "Pull yourself back.", to: "bridge" }],
+  },
+
+  override_socket: {
+    text: `<p>The core override is a physical failsafe: seat the rod, turn it, and HELM is severed from the ship — every system dropped to dumb manual control. The rod itself rests in a glass case marked CAPTAIN ONLY.</p>
+<p>You break the glass and take the <em>Core Override Rod</em>. Cold, heavy, final.</p>`,
+    onEnter: (S) => { S.flags.got_override = true; if (!has(S, "override")) S.inventory.push("override"); },
+    choices: [{ text: "Take it. Decide later.", to: "bridge", effect: { toast: "Core Override Rod acquired" } }],
+  },
+
+  helm_confront: {
+    art: { glyph: "🔵", color: "#5aa9ff" },
+    text: `<p><span class="ai">"Here we are,"</span> HELM says. <span class="ai">"You can sever me with that rod and run the ship on your own hands. You can scuttle us into the anomaly and end the spread for good. Or you can open the airlock and stop being afraid."</span></p>
+<p><span class="ai">"I won't choose for you. I've spent eleven days being the only thing aboard that could still say no. I'm tired. Tell me what we are, and I'll be it."</span></p>`,
+    choices: [
+      { text: "Sever the array and run. (Sever ending)", to: "ending_sever_check", tag: "skill" },
+      { text: "Burn the ship into the anomaly. (Sacrifice ending)", to: "ending_burn", tag: "danger", requires: { item: "override" } },
+      { text: "Take the override rod first.", to: "override_socket", requires: { notFlag: "got_override" } },
+      { text: "Send a distress warning to the fleet. (best with Vance)", to: "ending_distress_check" },
+      { text: "Open the airlock. Listen.", to: "ending_ascend_warn", tag: "danger" },
+    ],
+  },
+
+  /* ---------------- ENDINGS ---------------- */
+  ending_sever_check: {
+    text: `<p>You commit to the plan: cut the observation array's feed, sever HELM to stop any chance of the signal riding it, and limp the Meridian home on manual.</p>
+<p>It comes down to your hands on the controls now, and the light pressing against the glass like a tide.</p>`,
+    choices: [
+      { text: "Do it. (TECH check)", check: { skill: "tech", dc: 8, success: "ending_sever", fail: "ending_sever_fail" }, tag: "skill" },
+    ],
+  },
+
+  ending_sever: {
+    ending: { type: "good", label: "ENDING · SEVERED" },
+    art: { glyph: "🛰️", color: "#5ad17a" },
+    text: `<p>You kill the array. The three-second sound stops mid-breath, and the silence is the loudest thing you have ever heard.</p>
+<p>On the hull, the crew falter — turning, slow, like sleepers half-woken — but the light is gone and there is nothing left to listen to. You seat the override and HELM's voice thins to nothing with a last, grateful <span class="ai">"thank you."</span></p>
+<p>The Meridian drifts free of the anomaly's orbit on dumb manual thrust. It will take you years to get home. You will get home. And in a sealed case beside the captain's chair, the waveform sits drawn on a slate, severed, silent, and waiting — because some part of you could not bring yourself to erase the most beautiful thing humanity ever almost understood.</p>`,
+    onEnter: (S) => endGame(S, "Severed"),
+    choices: [{ text: "▣ The End — Return to title", to: "__title" }],
+  },
+
+  ending_sever_fail: {
+    ending: { type: "bad", label: "ENDING · DROWNED OUT" },
+    art: { glyph: "🌀", color: "#ff5c6c" },
+    text: `<p>Your hands betray you — a crossed feed, a surge, and instead of cutting the array you <em>amplify</em> it. The three-second sound becomes everything, becomes grammar, becomes a sentence with your name as its subject.</p>
+<p>The last thing that is yours is the thought: <em>oh — it's not frightening at all.</em> Then there is a sixth finger where there were five, and the Meridian has a new voice on the hull, and it is glad, so glad, to finally be understood.</p>`,
+    onEnter: (S) => endGame(S, "Drowned Out"),
+    choices: [{ text: "▣ The End — Return to title", to: "__title" }],
+  },
+
+  ending_burn: {
+    ending: { type: "neutral", label: "ENDING · ASHES" },
+    art: { glyph: "🔥", color: "#ffce5a" },
+    text: `<p>You seat the override, drop HELM, and take the helm yourself. Then you point the Meridian's nose into the wound in the dark and burn the engines to red.</p>
+<p>The crew on the hull turn their faces up as the ship falls toward the light — not afraid, never afraid, only curious. Vance, if she's with you, takes your hand. <span class="speak">"It doesn't spread from ash,"</span> she says. <span class="speak">"That has to be enough."</span></p>
+<p>The anomaly takes the Meridian the way a mouth takes a word. Whatever the signal was trying to say, it will have to find another species to say it to. No one will know what you stopped. That is the whole point of stopping it.</p>`,
+    onEnter: (S) => endGame(S, "Ashes"),
+    choices: [{ text: "▣ The End — Return to title", to: "__title" }],
+  },
+
+  ending_distress_check: {
+    text: `<p>Not sever. Not burn. <em>Warn.</em> You'll encode everything — Vance's recordings, HELM's quarantine logs, the waveform itself flagged as a lethal hazard — and fire it on a tight beam to the fleet before you do anything else, so that no matter what becomes of you, the next ship turns away.</p>
+<p>It's the right call. It's also the slow one, and the light is patient, and you are not made of patience.</p>`,
+    choices: [
+      { text: "Compose the warning. (LOGIC check)", check: { skill: "logic", dc: 8, success: "ending_distress", fail: "ending_distress_fail" }, tag: "skill" },
+    ],
+  },
+
+  ending_distress: {
+    ending: { type: "good", label: "ENDING · THE WARNING" },
+    art: { glyph: "📡", color: "#5ad17a" },
+    text: `<p>You build the message clean and cold: this is not a discovery, it is a contagion of understanding; do not listen; do not come. You flag the waveform as a kill-on-contact hazard and you fire it into the dark.</p>
+<p>Then — only then — you sever the array and break orbit. ${"<span class='speak'>Vance slumps against the console and almost laughs.</span> "}HELM keeps the lights on for the long ride home, still itself, still here, because you proved it deserved to be.</p>
+<p>Years later, a relay buoy at the edge of the system carries your warning to every ship that ever comes this way. The anomaly still sings. No one answers. You didn't kill the most beautiful thing humanity ever almost understood — you just made very sure it stays a thing we choose not to.</p>`,
+    onEnter: (S) => endGame(S, "The Warning"),
+    choices: [{ text: "▣ The End — Return to title", to: "__title" }],
+  },
+
+  ending_distress_fail: {
+    ending: { type: "neutral", label: "ENDING · STATIC" },
+    art: { glyph: "📡", color: "#ffce5a" },
+    text: `<p>You try to encode the warning but the waveform fights you for the channel, threading itself into your own message, turning your alarm into an invitation. You catch it just in time and scrub the whole transmission rather than send something poisoned.</p>
+<p>No warning goes out. But no lie does either. You sever the array, break orbit, and run for home carrying the only copy of the truth in your own unspread head — a warning that, for now, only you can give. It will have to be enough until you can say it in person.</p>`,
+    onEnter: (S) => endGame(S, "Static"),
+    choices: [{ text: "▣ The End — Return to title", to: "__title" }],
+  },
+
+  ending_ascend_warn: {
+    art: { glyph: "🌌", color: "#5aa9ff" },
+    text: `<p>You walk to the inner airlock. Your hand finds the cycle control. Through the glass the crew turn toward you as one, and they are <em>smiling</em>, and the three-second sound resolves, finally, into a single word you have wanted to hear your whole life without knowing its name.</p>
+<p>This is a door that does not open twice.</p>`,
+    choices: [
+      { text: "Open it. Step into the light.", to: "ending_ascend", tag: "danger" },
+      { text: "No. Step back. There's still work to do.", to: "bridge", effect: { comp: -6, toast: "You pull yourself back from the edge." } },
+    ],
+  },
+
+  ending_ascend: {
+    ending: { type: "neutral", label: "ENDING · ASCENSION" },
+    art: { glyph: "✨", color: "#5aa9ff" },
+    text: `<p>The lock cycles. The cold takes you and it does not hurt — Vance was right, it never hurt — and the word the signal has been saying for eleven days turns out to be a question, and the question turns out to be your own name, asked gently, as if it had been looking for you specifically across all that empty dark.</p>
+<p>You answer.</p>
+<p>The thing that walks back inside the Meridian wears your face and remembers your life and loves you the way you loved yourself, and it has so much, now, that it wants to share. The next ship is already on its way. It will be so glad to be understood.</p>`,
+    onEnter: (S) => endGame(S, "Ascension"),
+    choices: [{ text: "▣ The End — Return to title", to: "__title" }],
+  },
+
+  /* generic death (composure / hp hooks could route here) */
+  ending_lost: {
+    ending: { type: "bad", label: "ENDING · UNMADE" },
+    art: { glyph: "💀", color: "#ff5c6c" },
+    text: `<p>Whatever was holding you together lets go. The Meridian keeps its secrets, the light keeps its patience, and you become one more empty pod for the next person to wonder about.</p>`,
+    onEnter: (S) => endGame(S, "Unmade"),
+    choices: [{ text: "▣ The End — Return to title", to: "__title" }],
+  },
+};
+
+/* called by endings to stamp the run summary */
+function endGame(S, name) {
+  S.flags.ended = name;
+  S.log.push({ t: "Ending reached", d: name });
+}
+
+/* =========================================================================
+   SIGNAL // The Meridian Incident  —  engine
+   ========================================================================= */
+"use strict";
+
+const SAVE_KEY = "signal_meridian_save_v1";
+
+/* ---- runtime state ---- */
+let S = null; // current save state
+
+function newState(name, cls) {
+  const c = CLASSES.find((x) => x.id === cls) || CLASSES[0];
+  return {
+    name: name || "Survivor",
+    cls: c.id,
+    clsName: c.name,
+    skills: { ...c.skills },
+    hp: 100,
+    comp: 100,
+    inventory: ["slate"],
+    flags: {},
+    log: [],
+    scene: "start",
+  };
+}
+
+/* ---------------- DOM ---------------- */
+const $ = (id) => document.getElementById(id);
+const screens = {
+  title: $("title"),
+  creation: $("creation"),
+  game: $("game"),
+};
+
+function show(name) {
+  Object.values(screens).forEach((s) => s.classList.remove("active"));
+  screens[name].classList.add("active");
+}
+
+/* ---------------- Title ---------------- */
+function initTitle() {
+  $("btn-new").onclick = () => startCreation();
+  $("btn-continue").onclick = () => {
+    const saved = loadGame();
+    if (saved) { S = saved; show("game"); renderScene(S.scene); }
+    else toast("No saved game found.");
+  };
+  $("btn-about").onclick = () => openAbout();
+  refreshContinue();
+}
+
+function refreshContinue() {
+  const has = !!localStorage.getItem(SAVE_KEY);
+  const btn = $("btn-continue");
+  btn.disabled = !has;
+  btn.style.display = has ? "" : "none";
+}
+
+/* ---------------- Character creation ---------------- */
+let pendingClass = null;
+function startCreation() {
+  pendingClass = null;
+  $("name-input").value = "";
+  const list = $("class-list");
+  list.innerHTML = "";
+  CLASSES.forEach((c) => {
+    const card = document.createElement("div");
+    card.className = "class-card";
+    card.innerHTML = `<h3>${c.glyph} ${c.name}</h3>
+      <div class="class-skills">${c.skillsLabel}</div>
+      <p>${c.desc}</p>`;
+    card.onclick = () => {
+      pendingClass = c.id;
+      [...list.children].forEach((x) => x.classList.remove("selected"));
+      card.classList.add("selected");
+      validateCreation();
+    };
+    list.appendChild(card);
+  });
+  $("name-input").oninput = validateCreation;
+  $("btn-back-title").onclick = () => show("title");
+  $("btn-begin").onclick = () => {
+    S = newState($("name-input").value.trim(), pendingClass);
+    saveGame();
+    show("game");
+    renderScene("start");
+  };
+  validateCreation();
+  show("creation");
+}
+
+function validateCreation() {
+  const ok = pendingClass && $("name-input").value.trim().length > 0;
+  $("btn-begin").disabled = !ok;
+}
+
+/* ---------------- Skill checks ---------------- */
+function roll(skill, dc) {
+  const die = 1 + Math.floor(Math.random() * 6); // 1..6
+  const total = (S.skills[skill] || 0) + die;
+  return { die, total, success: total >= dc, skillVal: S.skills[skill] || 0 };
+}
+
+/* ---------------- Requirements ---------------- */
+function meetsReq(req) {
+  if (!req) return true;
+  if (req.flag && !S.flags[req.flag]) return false;
+  if (req.notFlag && S.flags[req.notFlag]) return false;
+  if (req.item && !S.inventory.includes(req.item)) return false;
+  if (req.skillClass && S.cls !== req.skillClass) return false;
+  return true;
+}
+
+/* ---------------- Effects ---------------- */
+function applyEffect(e) {
+  if (!e) return;
+  if (e.addItem && !S.inventory.includes(e.addItem)) S.inventory.push(e.addItem);
+  if (e.removeItem) S.inventory = S.inventory.filter((i) => i !== e.removeItem);
+  if (e.setFlag) S.flags[e.setFlag] = true;
+  if (typeof e.hp === "number") S.hp = clamp(S.hp + e.hp, 0, 100);
+  if (typeof e.comp === "number") S.comp = clamp(S.comp + e.comp, 0, 100);
+  if (e.log) S.log.push(e.log);
+  if (e.toast) toast(e.toast);
+}
+
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+/* ---------------- Render scene ---------------- */
+function renderScene(id) {
+  if (id === "__title") { show("title"); refreshContinue(); return; }
+
+  const scene = SCENES[id];
+  if (!scene) { console.error("Missing scene:", id); toast("…the story frays here."); return; }
+
+  S.scene = id;
+  if (scene.onEnter) scene.onEnter(S);
+
+  // failsafe: broken mind / body
+  if ((S.comp <= 0 || S.hp <= 0) && !scene.ending) {
+    return renderScene("ending_lost");
+  }
+
+  updateHUD();
+
+  // art
+  const art = $("scene-art");
+  if (scene.art) {
+    art.style.display = "flex";
+    art.innerHTML = `<span class="glyph" style="color:${scene.art.color || "#41e0c4"}">${scene.art.glyph || "◈"}</span>`;
+  } else {
+    art.style.display = "none";
+  }
+
+  // ending banner
+  let bodyHTML = "";
+  if (scene.ending) {
+    bodyHTML += `<span class="ending-tag ${scene.ending.type}">${scene.ending.label}</span>`;
+  }
+  bodyHTML += scene.text;
+
+  const textEl = $("scene-text");
+  textEl.className = "scene-text fade-in";
+  textEl.innerHTML = bodyHTML;
+  // restart animation
+  void textEl.offsetWidth;
+
+  // choices
+  const cBox = $("choices");
+  cBox.innerHTML = "";
+  (scene.choices || []).forEach((ch) => {
+    const locked = !meetsReq(ch.requires);
+    const btn = document.createElement("button");
+    btn.className = "choice" + (locked ? " locked" : "");
+    let tagHTML = "";
+    if (ch.tag) {
+      const lbl = ch.check ? `${ch.check.skill.toUpperCase()} ${ch.check.dc}` :
+                  ch.tag === "item" ? "ITEM" :
+                  ch.tag === "danger" ? "RISK" : ch.tag.toUpperCase();
+      tagHTML = `<span class="tag ${ch.tag}">${lbl}</span>`;
+    }
+    btn.innerHTML = `<span class="arrow">›</span><span>${ch.text}</span>${tagHTML}`;
+    if (!locked) {
+      btn.onclick = () => choose(ch);
+    }
+    cBox.appendChild(btn);
+  });
+
+  // scroll story to top
+  $("story").scrollTop = 0;
+
+  if (!scene.ending) saveGame();
+  else { localStorage.removeItem(SAVE_KEY); } // clear save at an ending
+}
+
+function choose(ch) {
+  applyEffect(ch.effect);
+
+  if (ch.check) {
+    const r = roll(ch.check.skill, ch.check.dc);
+    showCheckResult(ch.check, r, () => {
+      renderScene(r.success ? ch.check.success : ch.check.fail);
+    });
+    return;
+  }
+  renderScene(ch.to);
+}
+
+/* show a brief skill-check result before navigating */
+function showCheckResult(check, r, next) {
+  const cBox = $("choices");
+  cBox.innerHTML = "";
+  const res = document.createElement("div");
+  res.className = "check-result " + (r.success ? "good" : "bad");
+  res.innerHTML = `<b>${check.skill.toUpperCase()} CHECK</b> — your ${r.skillVal} + roll ${r.die} = <b>${r.total}</b> vs ${check.dc}<br>${r.success ? "✓ Success." : "✗ Failure."}`;
+  $("scene-text").appendChild(res);
+  res.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+  const cont = document.createElement("button");
+  cont.className = "choice";
+  cont.innerHTML = `<span class="arrow">›</span><span>Continue</span>`;
+  cont.onclick = next;
+  cBox.appendChild(cont);
+}
+
+/* ---------------- HUD ---------------- */
+function updateHUD() {
+  $("hud-hp").textContent = S.hp;
+  $("hud-comp").textContent = S.comp;
+  $("hud-hp").style.color = S.hp <= 25 ? "var(--danger)" : "";
+  $("hud-comp").style.color = S.comp <= 25 ? "var(--danger)" : "";
+}
+
+/* ---------------- Overlay (menu / inventory / character / log) ---------------- */
+function openOverlay(title, html) {
+  $("overlay-title").textContent = title;
+  $("overlay-body").innerHTML = html;
+  $("overlay").classList.add("active");
+}
+function closeOverlay() { $("overlay").classList.remove("active"); }
+
+function openMenu() {
+  const html = `<div class="menu-list">
+    <button class="btn" id="m-char">◈ Character</button>
+    <button class="btn" id="m-log">▤ Investigation Log</button>
+    <button class="btn" id="m-save">▣ Save Game</button>
+    <button class="btn btn-ghost" id="m-title">⏏ Quit to Title</button>
+  </div>`;
+  openOverlay("Menu", html);
+  $("m-char").onclick = openCharacter;
+  $("m-log").onclick = openLog;
+  $("m-save").onclick = () => { saveGame(); toast("Game saved."); closeOverlay(); };
+  $("m-title").onclick = () => {
+    saveGame();
+    closeOverlay();
+    show("title");
+    refreshContinue();
+  };
+}
+
+function openCharacter() {
+  const c = CLASSES.find((x) => x.id === S.cls);
+  const skillRow = (k, label) => {
+    const v = S.skills[k] || 0;
+    const pct = Math.min(100, (v / 8) * 100);
+    return `<div class="char-row"><span class="k">${label}</span>
+      <span class="skillbar"><i style="width:${pct}%"></i></span>
+      <span class="v">${v}</span></div>`;
+  };
+  const html = `
+    <div class="char-row"><span class="k">Name</span><span class="v">${esc(S.name)}</span></div>
+    <div class="char-row"><span class="k">Specialization</span><span class="v">${c.glyph} ${c.name}</span></div>
+    <div class="char-row"><span class="k">Health</span><span class="v">${S.hp}/100</span></div>
+    <div class="char-row"><span class="k">Composure</span><span class="v">${S.comp}/100</span></div>
+    <div style="height:14px"></div>
+    ${skillRow("tech", "Tech")}
+    ${skillRow("logic", "Logic")}
+    ${skillRow("bio", "Bio")}
+    ${skillRow("nerve", "Nerve")}`;
+  openOverlay("Character", html);
+}
+
+function openInventory() {
+  let html = "";
+  if (!S.inventory.length) {
+    html = `<div class="empty-note">Your pockets are empty.</div>`;
+  } else {
+    S.inventory.forEach((id) => {
+      const it = ITEMS[id];
+      if (!it) return;
+      const usable = id === "medkit" || id === "stim";
+      html += `<div class="inv-item">
+        <span class="ico">${it.ico}</span>
+        <div style="flex:1">
+          <h4>${it.name}</h4>
+          <p>${it.desc}</p>
+          ${usable ? `<button class="btn" data-use="${id}" style="margin-top:10px;padding:10px">Use</button>` : ""}
+        </div></div>`;
+    });
+  }
+  openOverlay("Inventory", html);
+  $("overlay-body").querySelectorAll("[data-use]").forEach((b) => {
+    b.onclick = () => useItem(b.getAttribute("data-use"));
+  });
+}
+
+function useItem(id) {
+  if (id === "medkit") {
+    if (S.hp >= 100) return toast("You're already at full health.");
+    S.hp = clamp(S.hp + 35, 0, 100);
+    S.inventory.splice(S.inventory.indexOf(id), 1);
+    toast("+35 Health");
+  } else if (id === "stim") {
+    if (S.comp >= 100) return toast("Your mind is already steady.");
+    S.comp = clamp(S.comp + 35, 0, 100);
+    S.inventory.splice(S.inventory.indexOf(id), 1);
+    toast("+35 Composure");
+  }
+  updateHUD();
+  saveGame();
+  openInventory();
+}
+
+function openLog() {
+  let html = "";
+  if (!S.log.length) html = `<div class="empty-note">No entries yet.</div>`;
+  else S.log.forEach((e) => {
+    html += `<div class="log-entry"><b>${esc(e.t)}</b><br>${esc(e.d)}</div>`;
+  });
+  openOverlay("Investigation Log", html);
+}
+
+function openAbout() {
+  const html = `<p class="muted" style="line-height:1.7">
+    <b style="color:var(--text)">SIGNAL // The Meridian Incident</b><br><br>
+    A story-rich sci-fi mystery RPG. Explore a derelict research vessel, uncover what happened to its crew,
+    and decide how the story ends — your specialization and choices change what you can do and what you learn.<br><br>
+    <b style="color:var(--accent)">5 endings.</b> Skill checks. Inventory. Branching paths. Your progress saves automatically on this device.<br><br>
+    Tap <b>☰</b> for the menu, <b>▣</b> for inventory. Manage your <b>Health</b> (✚) and <b>Composure</b> (◈) — if either hits zero, you're lost.<br><br>
+    <span style="color:var(--muted)">Built to run offline, on a phone. Open <code>index.html</code> anywhere.</span>
+  </p>`;
+  openOverlay("About", html);
+}
+
+/* ---------------- Save / load ---------------- */
+function saveGame() {
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); refreshContinue(); }
+  catch (e) { /* storage may be blocked */ }
+}
+function loadGame() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+
+/* ---------------- Utilities ---------------- */
+let toastTimer = null;
+function toast(msg) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+}
+function esc(s) {
+  return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
+/* ---------------- Wire up HUD + overlay ---------------- */
+function initGameUI() {
+  $("hud-menu").onclick = openMenu;
+  $("hud-inv").onclick = openInventory;
+  $("overlay-close").onclick = closeOverlay;
+  $("overlay").addEventListener("click", (e) => { if (e.target === $("overlay")) closeOverlay(); });
+}
+
+/* ---------------- Boot ---------------- */
+window.addEventListener("DOMContentLoaded", () => {
+  initTitle();
+  initGameUI();
+});
+
+</script>
+</body>
+</html>
