@@ -95,7 +95,7 @@
     $("sb-time").innerHTML = `Day ${S.day}<small>${seas} · Yr ${1 + Math.floor(S.day / 360)}</small>`;
     $("ch-num").textContent = S.colonyHealth;
     $("ch-fill").style.width = S.colonyHealth + "%";
-    $("adv-len").textContent = turnLabel(C.turnHours(S.colonyHealth));
+    $("adv-len").textContent = "up to " + turnLabel(C.turnHours(S.colonyHealth));
     if (S.over) { $("advance").textContent = "— ended —"; $("advance").disabled = true; }
   }
   function turnLabel(h) { return h < 24 ? "1 hour" : h < 168 ? "1 day" : h < 720 ? "1 week" : h < 2160 ? "1 month" : h < 8640 ? "1 season" : "1 year"; }
@@ -123,7 +123,8 @@
       return f;
     }
     const w = el("div", "card");
-    w.innerHTML = `<h3>What happened — past ${lastBrief ? turnLabel(lastBrief.turnHours) : "while"}</h3>`;
+    const span = (lastBrief && lastBrief.daysElapsed) ? (lastBrief.daysElapsed + (lastBrief.daysElapsed === 1 ? " day" : " days")) : "the founding";
+    w.innerHTML = `<h3>What happened — ${span}</h3>`;
     const log = (lastBrief && lastBrief.log && lastBrief.log.length) ? lastBrief.log : ["A quiet stretch. Nothing of note."];
     log.forEach(line => w.appendChild(el("div", "logline", line)));
     f.appendChild(w);

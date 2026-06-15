@@ -21,13 +21,15 @@ function botBalanced(s) {
   if (s.projects.length === 0) {
     const order = loc.hasWater === false
       ? ["well", "forester", "gatherer", "quarry", "woodhouse", "watchtower", "barn", "well", "wall", "hunter", "stonehouse", "hospital"]
-      : ["forester", "gatherer", "well", "woodcutter", "quarry", "barn", "woodhouse", "watchtower", "hunter", "wall", "woodhouse", "herbalist", "stonehouse", "hospital", "tavern", "stockpile", "chapel"];
+      : loc.coldness > 1
+      ? ["forester", "gatherer", "woodcutter", "well", "quarry", "barn", "woodhouse", "watchtower", "hunter", "wall", "woodhouse", "watchtower", "wall", "herbalist", "stonehouse", "hospital"]
+      : ["forester", "gatherer", "well", "woodcutter", "quarry", "barn", "woodhouse", "watchtower", "hunter", "wall", "woodhouse", "watchtower", "wall", "herbalist", "stonehouse", "hospital", "tavern", "stockpile", "chapel"];
     for (const id of order) {
       const bd = C.BUILDINGS[id];
       const gate = (loc.buildings && loc.buildings[id] != null) ? loc.buildings[id] : 1;
       if (gate <= 0) continue;
       const built = B[id] || 0;
-      const cap = (id === "woodhouse") ? 4 : (id === "forester" || id === "gatherer" || id === "well") ? 2 : 1;
+      const cap = (id === "woodhouse") ? 4 : (id === "forester" || id === "gatherer" || id === "well" || id === "watchtower" || id === "wall") ? 2 : 1;
       if (built >= cap) continue;
       // build more housing only if near cap
       if (id === "woodhouse" && C.housingFree(s) > 1) continue;
@@ -48,14 +50,18 @@ function botBalanced(s) {
   const foodWorkers = Math.max(1, Math.ceil(pop * C.CONFIG.foodPerDay * 1.3 / foodPerWorker));
   for (let i = 0; i < foodWorkers; i++) need.push(foodJob);
   if (B.hunter) need.push("hunter");
-  if (winterish && B.woodcutter && (store.logs || 0) > 5) need.push("woodcutter");
-  // defense: scale with pop, more if no wall
-  const wantWatch = Math.min(3, Math.max(1, Math.floor(pop / 3)) + (B.wall ? 0 : 1));
-  for (let i = 0; i < wantWatch; i++) need.push("watch");
-  if (s.projects.length) { need.push("build"); if (pop > 6) need.push("build"); }
+  // stock firewood ahead of winter in cold climates
+  const fwNeed = pop * C.CONFIG.firewoodPerDayCold * loc.coldness;
+  const fwDays = fwNeed > 0 ? (store.firewood || 0) / fwNeed : 99;
+  if (B.woodcutter && (store.logs || 0) > 5 && loc.coldness > 0.5 && (winterish || fwDays < 40)) need.push("woodcutter");
+  // construction + materials come before defense (survival first)
+  if (s.projects.length) { need.push("build"); if (pop > 7) need.push("build"); }
   const logJob = B.forester ? "forester" : "chopwood";
   need.push(logJob);
   need.push(B.quarry ? "quarry" : "quarrystone");
+  // defense scales with colony size
+  const wantWatch = Math.min(4, Math.max(1, Math.round(pop / 4)));
+  for (let i = 0; i < wantWatch; i++) need.push("watch");
   if (B.herbalist && live.some(c => c.sick > 0)) need.push("herbalist");
   if (live.some(c => c.health < 50)) need.push(B.hospital ? "hospital" : "tend");
 

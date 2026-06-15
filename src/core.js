@@ -32,7 +32,7 @@
     // vitals dynamics (per day deltas)
     eatGain: 28, starveLoss: 20,
     warmthApproach: 0.30,
-    coldHealthLoss: 9, starveHealthLoss: 10, thirstHealthLoss: 12, sickHealthLoss: 8,
+    coldHealthLoss: 10, starveHealthLoss: 10, thirstHealthLoss: 12, sickHealthLoss: 8,
     healRest: 3, healHospital: 9, healHerbTonic: 6,
     happinessApproach: 0.25,
     varietyBonus: 6,            // health/happiness lift when diet is varied (>=3 types)
@@ -222,7 +222,7 @@
   const EVENTS = [
     { id: "cold_snap", w: 1.0, loc: ["rockies"], season: ["Autumn", "Winter"], cat: "weather",
       effect: s => { s._coldShock = 25; return "A cold snap bites — Warmth plummets."; } },
-    { id: "mild_spell", w: 0.8, cat: "weather",
+    { id: "mild_spell", w: 0.8, cat: "weather", minor: true,
       effect: s => { s._warmShock = 15; return "A mild spell — fuel goes further, spirits lift."; } },
     { id: "heatwave", w: 1.0, loc: ["desert"], season: ["Summer"], cat: "weather",
       effect: s => { drain(s, "water", 8 * s.colonists.length); return "A heatwave — water vanishes."; } },
@@ -230,33 +230,33 @@
       effect: s => { drain(s, "water", 12 * s.colonists.length); return "Drought. The wells and crops run dry."; } },
     { id: "flood", w: 0.9, loc: ["delta"], cat: "weather",
       effect: s => { drainFood(s, 0.12); return "Floodwaters spoil part of the stores."; } },
-    { id: "bumper", w: 0.7, cat: "weather",
+    { id: "bumper", w: 0.7, cat: "weather", minor: true,
       effect: s => { add(s, "grain", 20); add(s, "veg", 15); return "A bumper harvest fills the barn."; } },
     { id: "fever", w: 1.0, loc: ["jungle", "delta"], cat: "disease", choice: true,
       effect: s => { sicken(s, 2); return "Fever spreads through the colony."; } },
     { id: "plague", w: 0.4, cat: "disease",
       effect: s => { sicken(s, 3); return "A plague takes hold."; } },
-    { id: "raid", w: 0.65, cat: "human",
-      effect: s => raid(s, 6 + Math.floor(wealth(s) / 55)) },
+    { id: "raid", w: 0.55, cat: "human",
+      effect: s => raid(s, 6 + Math.min(26, Math.floor(wealth(s) / 75))) },
     { id: "predator", w: 0.8, loc: ["rockies", "jungle"], cat: "wildlife",
       effect: s => raid(s, 5, true) },
-    { id: "trader", w: 0.7, cat: "arrival", choice: true,
-      effect: s => { add(s, "tools", 4); return "A wandering trader passes through."; } },
-    { id: "wanderer", w: 1.3, cat: "arrival", choice: true,
-      effect: s => { if (housingFree(s) > 0) { s.colonists.push(makeColonist(s.rng, s.location, "wanderer")); return "A wanderer asks to join — and is taken in."; } return "A wanderer passes by; no room to take them in."; } },
-    { id: "cache", w: 0.6, cat: "discovery",
+    { id: "trader", w: 0.7, cat: "arrival", minor: true, choice: true,
+      effect: s => { add(s, "tools", 4); return "A wandering trader passes through; we barter for tools."; } },
+    { id: "wanderer", w: 1.3, cat: "arrival", minor: true, choice: true,
+      effect: s => { if (housingFree(s) > 0) { s.colonists.push(makeColonist(s.rng, s.location, "wanderer")); return "A wanderer asks to join — and is taken in."; } return null; } },
+    { id: "cache", w: 0.6, cat: "discovery", minor: true,
       effect: s => { add(s, "iron", 10); add(s, "tools", 3); return "A scout turns up an old cache."; } },
-    { id: "oasis", w: 0.6, loc: ["desert"], cat: "discovery",
+    { id: "oasis", w: 0.6, loc: ["desert"], cat: "discovery", minor: true,
       effect: s => { add(s, "water", 40); return "An oasis is found — water for weeks."; } },
-    { id: "pests", w: 0.6, cat: "wildlife",
+    { id: "pests", w: 0.6, cat: "wildlife", minor: true,
       effect: s => { drainFood(s, 0.08); return "Pests get into the grain."; } },
-    { id: "death_old_age", w: 0.3, cat: "population",
-      effect: s => { const c = oldest(s); if (c && s.colonists.length > 1) { kill(s, c, "old age"); return `${c.name} passes peacefully of old age.`; } return null; } },
+    { id: "death_old_age", w: 0.13, cat: "population",
+      effect: s => { const c = oldest(s); if (c && c.age >= 50 && s.colonists.filter(x => x.alive).length > 4) { kill(s, c, "old age"); return `${c.name} passes peacefully of old age.`; } return null; } },
   ];
 
   /* ------------------------------------------------------------- LOCATIONS */
   const LOCATIONS = {
-    rockies: { name: "Canadian Rockies", coldness: 1.4, water: 1.0, foodMult: 0.9, hasWater: true, hasOre: true,
+    rockies: { name: "Canadian Rockies", coldness: 1.1, water: 1.0, foodMult: 0.9, hasWater: true, hasOre: true,
       buildings: { fisher: 0.4 }, difficulty: "Medium" },
     jungle: { name: "Yucatán Jungle", coldness: 0.2, water: 1.0, foodMult: 1.3, hasWater: true, hasOre: false, tainted: true,
       buildings: { mine: 0, quarry: 0.6 }, difficulty: "Medium" },
@@ -482,8 +482,11 @@
       else c.hunger = clamp(c.hunger - CONFIG.starveLoss * (1 - fed), 0, 100);
       // warmth target
       let target = 80;
-      if (colds > 0) { target = fireShort ? 25 : 70; if ((s.store.coats || 0) > 0) { target += 12; drain(s, "coats", CONFIG.coatUsePerColdDay); } }
-      else target = 85;
+      if (colds > 0) {
+        const noFire = clamp(70 - LOCATIONS[s.location].coldness * 45, 5, 70); // mild climates stay survivable
+        target = fireShort ? noFire : 74;
+        if ((s.store.coats || 0) > 0) { target += 14; drain(s, "coats", CONFIG.coatUsePerColdDay); }
+      } else target = 85;
       if (s.decrees.ration_firewood) target -= 8;
       c.warmth = clamp(c.warmth + (target - c.warmth) * CONFIG.warmthApproach, 0, 100);
       // sickness
@@ -555,30 +558,32 @@
   function advanceTurn(s) {
     if (s.over) return { over: true };
     const hours = turnHours(s.colonyHealth);
-    const days = Math.max(1, Math.round(hours / 24)); // sub-day tiers collapse to >=1 day of sim, but turn label keeps hours
-    const startDay = s.day; const logs = [];
-    let interrupted = false;
-    const maxDays = hours < 24 ? 1 : days;
+    const maxDays = hours < 24 ? 1 : Math.round(hours / 24);
+    const startDay = s.day, startSeason = season(s); const logs = [];
     for (let d = 0; d < maxDays; d++) {
       const ev = tickDay(s);
       logs.push(...ev);
-      // storyteller event check (per day)
-      if (s.rng() < eventChance(s)) { const line = fireEvent(s); if (line) logs.push(line); interrupted = true; }
-      if (s.colonists.filter(c => c.alive).length === 0) { s.over = true; s.ending = "The colony is gone."; break; }
-      if (ev.length || interrupted) break; // threshold/event interrupt
+      let stop = ev.length > 0;            // a death this day
+      if (s.rng() < eventChance(s)) {
+        const e = pickEvent(s);
+        if (e) { const line = e.effect(s); if (line) logs.push(line); if (!e.minor) stop = true; }
+      }
+      if (s.colonists.filter(c => c.alive).length === 0) { s.over = true; break; }
+      if (season(s) !== startSeason) stop = true;   // re-plan at each season change
+      if (stop) break;
     }
-    s.turn++; s.hour += hours;
+    s.turn++; s.hour += (s.day - startDay) * 24;
     s.colonyHealth = computeColonyHealth(s);
     if (s.colonists.filter(c => c.alive).length === 0) { s.over = true; s.ending = s.ending || "The colony is gone."; }
     return { over: s.over, turnHours: hours, daysElapsed: s.day - startDay, season: season(s), log: logs, colonyHealth: s.colonyHealth };
   }
-  function eventChance(s) { return CONFIG.eventChancePerDay * (0.5 + wealth(s) / 600) * (0.6 + s.colonists.length * 0.1); }
-  function fireEvent(s) {
-    const seas = season(s); const loc = s.location;
+  function eventChance(s) { return CONFIG.eventChancePerDay * (0.5 + wealth(s) / 700) * (0.7 + s.colonists.length * 0.06); }
+  function pickEvent(s) {
+    const seas = season(s), loc = s.location;
     const pool = EVENTS.filter(e => (!e.loc || e.loc.includes(loc)) && (!e.season || e.season.includes(seas)));
     if (!pool.length) return null;
     const total = pool.reduce((a, e) => a + e.w, 0); let r = s.rng() * total;
-    for (const e of pool) { r -= e.w; if (r <= 0) return e.effect(s); }
+    for (const e of pool) { r -= e.w; if (r <= 0) return e; }
     return null;
   }
 
