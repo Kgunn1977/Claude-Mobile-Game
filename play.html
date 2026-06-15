@@ -960,7 +960,7 @@ button{font-family:inherit;cursor:pointer;}
       if (gate <= 0) return;
       const afford = Object.keys(b.build.mats).every(r => (S.store[r] || 0) >= b.build.mats[r]);
       const mats = Object.entries(b.build.mats).map(([r, n]) => `${n} ${resName(r)}`).join(", ") || "no materials";
-      html += `<div class="opt ${afford ? "" : "disabled"}" data-id="${id}"><div class="oi">${b.name} <span class="muted" style="font-size:11px">— ${defOutputText(b)}</span><small>${b.build.work}w · ${mats}${b.skill ? " · " + cap2(b.skill) : ""}</small></div><button class="btn sm ${afford ? "primary" : ""}" ${afford ? "" : "disabled"}>Build</button></div>`;
+      html += `<div class="opt ${afford ? "" : "disabled"}" data-id="${id}"><div class="oi">${b.name} <span class="muted" style="font-size:11px">— ${defOutputText(b)}</span><small>needs ${mats} · ${b.build.work} work${b.skill ? " (" + cap2(b.skill) + ")" : ""}</small></div><button class="btn sm ${afford ? "primary" : ""}" ${afford ? "" : "disabled"}>Build</button></div>`;
     });
     openSheet(html);
     $("sheet").querySelectorAll(".opt").forEach(o => { const id = o.dataset.id; const btn = o.querySelector("button"); if (!btn.disabled) btn.onclick = () => { if (C.startProject(S, id)) { toast("Construction begun: " + C.BUILDINGS[id].name); closeSheet(); saveGame(); render(); } }; });
