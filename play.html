@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0b0e0a" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>Hollow Frontier</title>
+<style>
+:root{
+  --bg:#0b0e0a;--bg2:#11160e;--panel:#161d12;--panel2:#1d2618;--line:#2b3a23;
+  --text:#dfe8d4;--muted:#8aa07a;--accent:#9ed35a;--accent2:#e0b84a;--danger:#e76a5a;
+  --good:#7fd17a;--cold:#6fb0e0;--warn:#e0b84a;--shadow:0 8px 30px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;height:100%;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
+  position:fixed;inset:0;overflow:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased;}
+.screen{position:fixed;inset:0;display:none;flex-direction:column;}
+.screen.active{display:flex;}
+button{font-family:inherit;cursor:pointer;}
+.btn{appearance:none;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:13px 16px;border-radius:12px;font-size:15px;font-weight:600;width:100%;transition:transform .07s;}
+.btn:active{transform:scale(.97);}
+.btn.primary{background:linear-gradient(180deg,#3c6a1e,#2a4d14);border-color:var(--accent);color:#eaffcf;}
+.btn.sm{padding:8px 10px;font-size:13px;width:auto;border-radius:9px;}
+.muted{color:var(--muted);}
+.tag{display:inline-block;font-size:11px;padding:2px 7px;border-radius:20px;border:1px solid var(--line);color:var(--muted);}
+
+/* ---- setup ---- */
+#setup{padding:env(safe-area-inset-top) 16px 16px;overflow-y:auto;}
+.brand{text-align:center;margin:26px 0 6px;}
+.brand h1{font-size:30px;letter-spacing:.06em;margin:0;background:linear-gradient(180deg,#eaffcf,var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.brand p{color:var(--muted);margin:6px 0 0;font-size:13px;}
+.section-h{font-size:12px;letter-spacing:.18em;color:var(--accent);text-transform:uppercase;margin:22px 0 10px;}
+.loc-card{border:1px solid var(--line);border-radius:14px;padding:13px 15px;margin-bottom:10px;background:var(--panel);}
+.loc-card.sel{border-color:var(--accent);background:#1b2614;box-shadow:0 0 14px rgba(158,211,90,.15);}
+.loc-card h3{margin:0 0 3px;font-size:16px;}
+.loc-card .d{font-size:12px;color:var(--accent2);}
+.loc-card p{margin:5px 0 0;font-size:12.5px;color:var(--muted);line-height:1.45;}
+.founder{border:1px solid var(--line);border-radius:13px;padding:12px 14px;margin-bottom:10px;background:var(--panel);}
+.founder .top{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.founder h4{margin:0;font-size:15px;}
+.founder .sk{font-size:11.5px;color:var(--accent2);margin-top:5px;letter-spacing:.02em;}
+.founder .tr{font-size:11.5px;color:var(--muted);margin-top:4px;}
+
+/* ---- game ---- */
+#statusbar{display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top) + 8px) 12px 8px;background:var(--bg2);border-bottom:1px solid var(--line);}
+.sb-time{font-size:13px;font-weight:700;}
+.sb-time small{display:block;color:var(--muted);font-weight:500;font-size:11px;}
+.ch-wrap{flex:1;}
+.ch-bar{height:8px;border-radius:5px;background:#0a0d07;border:1px solid var(--line);overflow:hidden;}
+.ch-bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--danger),var(--accent2),var(--accent));}
+.ch-label{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:3px;}
+#advance{flex:none;background:linear-gradient(180deg,#3c6a1e,#2a4d14);border:1px solid var(--accent);color:#eaffcf;border-radius:11px;padding:10px 13px;font-weight:700;font-size:13px;}
+#advance:active{transform:scale(.96);}
+#page{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 80px;}
+#tabbar{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--bg2);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:5;}
+.tab{flex:1;text-align:center;padding:11px 4px;font-size:11px;color:var(--muted);background:none;border:none;}
+.tab.active{color:var(--accent);}
+.tab .ic{display:block;font-size:18px;margin-bottom:2px;}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:13px 14px;margin-bottom:12px;}
+.card h3{margin:0 0 10px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);}
+.logline{font-size:14px;line-height:1.5;padding:7px 0;border-bottom:1px solid var(--line);}
+.logline:last-child{border:none;}
+.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.res{display:flex;justify-content:space-between;font-size:13.5px;padding:6px 9px;background:var(--panel2);border:1px solid var(--line);border-radius:9px;}
+.res b{font-variant-numeric:tabular-nums;}
+.res.low b{color:var(--danger);}
+.vit{margin:7px 0;}
+.vit .lab{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:2px;}
+.vit .bar{height:6px;border-radius:4px;background:#0a0d07;border:1px solid var(--line);overflow:hidden;}
+.vit .bar>i{display:block;height:100%;}
+.row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);}
+.row:last-child{border:none;}
+.row .nm{flex:1;}
+.row .nm b{font-size:14.5px;}
+.row .nm .s{font-size:11px;color:var(--muted);}
+.seg{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;}
+.seg button{background:var(--panel2);border:none;color:var(--muted);padding:7px 9px;font-size:11px;font-weight:600;}
+.seg button.on{background:var(--accent);color:#16210a;}
+.jobpick{background:var(--panel2);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:9px;font-size:12.5px;min-width:96px;text-align:left;}
+
+/* ---- sheet / modal ---- */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;z-index:20;}
+.overlay.active{display:flex;}
+.sheet{width:100%;max-width:560px;max-height:80vh;overflow-y:auto;background:var(--panel);border:1px solid var(--line);border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));box-shadow:var(--shadow);}
+.sheet h3{margin:0 0 12px;font-size:16px;}
+.opt{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;border:1px solid var(--line);border-radius:11px;margin-bottom:8px;background:var(--panel2);}
+.opt.disabled{opacity:.4;}
+.opt .oi{font-size:13px;}
+.opt .oi small{display:block;color:var(--muted);font-size:11.5px;margin-top:2px;}
+@media(min-width:600px){.overlay{align-items:center;}.sheet{border-radius:18px;}}
+</style>
+</head>
+<body>
+  <!-- SETUP -->
+  <section id="setup" class="screen active">
+    <div class="brand"><h1>HOLLOW FRONTIER</h1><p>Lead the last to a place worth keeping.</p></div>
+    <div class="section-h">Choose your refuge</div>
+    <div id="loc-list"></div>
+    <div class="section-h">Your founders <span class="muted" style="text-transform:none;letter-spacing:0">— tap ↻ to reroll</span></div>
+    <div id="founder-list"></div>
+    <button class="btn primary" id="begin" style="margin-top:8px">Begin the Founding</button>
+    <div style="height:20px"></div>
+  </section>
+
+  <!-- GAME -->
+  <section id="game" class="screen">
+    <div id="statusbar">
+      <div class="sb-time" id="sb-time">Day 1<small>Spring</small></div>
+      <div class="ch-wrap">
+        <div class="ch-label"><span>Colony Health</span><span id="ch-num">—</span></div>
+        <div class="ch-bar"><i id="ch-fill" style="width:0%"></i></div>
+      </div>
+      <button id="advance">Advance ▶<br><small id="adv-len" style="font-weight:500;font-size:10px"></small></button>
+    </div>
+    <div id="page"></div>
+    <div id="tabbar">
+      <button class="tab active" data-page="briefing"><span class="ic">📜</span>Briefing</button>
+      <button class="tab" data-page="colony"><span class="ic">🏚️</span>Colony</button>
+      <button class="tab" data-page="people"><span class="ic">👥</span>People</button>
+      <button class="tab" data-page="jobs"><span class="ic">🛠️</span>Jobs</button>
+    </div>
+  </section>
+
+  <div id="overlay" class="overlay"><div class="sheet" id="sheet"></div></div>
+
+  <script>
+/* ============================================================================
+   HOLLOW FRONTIER — core (data + engine)
+   UMD module: works in Node (require) and browser (window.CORE).
+   Pure, deterministic simulation. No DOM, no I/O. Balance lives in CONFIG/DATA.
+   ============================================================================ */
+(function (root, factory) {
+  if (typeof module === "object" && module.exports) module.exports = factory();
+  else root.CORE = factory();
+}(typeof self !== "undefined" ? self : this, function () {
+  "use strict";
+
+  /* ---------------------------------------------------------------- CONFIG */
+  const CONFIG = {
+    HOURS_PER_DAY: 24,
+    DAYS_PER_SEASON: 90,
+    SEASONS: ["Spring", "Summer", "Autumn", "Winter"],
+    DAYS_PER_YEAR: 360,
+
+    START_FOUNDERS: 6,
+    REROLLS: 5,
+
+    // consumption (per person per day)
+    foodPerDay: 1.0,
+    waterPerDay: 0.8,
+    firewoodPerDayCold: 0.35,   // only burned when it's cold
+
+    // stamina / effort
+    recoveryBase: 40,           // stamina/day at full wellbeing
+    effortDefault: 40,          // sustainable default
+    effortMax: 100,
+
+    // vitals dynamics (per day deltas)
+    eatGain: 28, starveLoss: 20,
+    warmthApproach: 0.30,
+    coldHealthLoss: 9, starveHealthLoss: 10, thirstHealthLoss: 12, sickHealthLoss: 8,
+    healRest: 3, healHospital: 9, healHerbTonic: 6,
+    happinessApproach: 0.25,
+    varietyBonus: 6,            // health/happiness lift when diet is varied (>=3 types)
+
+    // colony-health weights (sum ~1 before threat penalty)
+    chWeights: { vitals: 0.50, food: 0.16, water: 0.10, firewood: 0.10, pop: 0.14 },
+    chCushionTargetDays: 20,    // days of supply that counts as "full" cushion
+
+    // turn length: [colonyHealth <, hours]
+    turnBands: [[15, 1], [30, 24], [50, 168], [70, 720], [88, 2160], [101, 8640]],
+
+    // storage
+    baseCap: 120,               // camp baseline cap per resource
+    stockpileCap: 350, barnCap: 350,
+    spoilNoBarn: 0.02,          // fraction/day of food lost without a Barn
+
+    // tools / coats wear
+    toolUsePerWorkerDay: 0.02,  // tools consumed per working colonist per day
+    noToolPenalty: 0.7,         // output multiplier when out of tools
+    coatUsePerColdDay: 0.01,
+
+    // storyteller
+    eventChancePerDay: 0.035,   // base; scaled by wealth/pop
+    raidPopScale: 0.6,
+    baseHousing: 6,             // the Camp shelters the founders
+
+    // mental breaks / health thresholds
+    breakEdge: 35, breakMinor: 20, breakMajor: 10,
+    lowVital: 30, conditionPenaltyCap: 6,
+  };
+
+  /* ------------------------------------------------------------- RESOURCES */
+  const FOOD_TYPES = ["grain", "fruit", "veg", "protein"];
+  const RESOURCES = [
+    ...FOOD_TYPES,
+    "water", "logs", "stone", "iron", "coal", "herbs", "leather", "wool",
+    "firewood", "tools", "coats", "ale", "weapons", "ammo",
+  ];
+
+  /* ---------------------------------------------------------------- SKILLS */
+  const SKILLS = ["provision", "labor", "crafting", "building", "medicine", "combat"];
+  const SK = { provision: "Prov", labor: "Lab", crafting: "Craft", building: "Build", medicine: "Med", combat: "Cmb" };
+
+  /* ---------------------------------------------------------------- TRAITS */
+  // single-skill (+3 / -3)
+  const SINGLE_TRAITS = {
+    provision: ["Forager's Eye", "Town-Bred"],
+    labor: ["Ox", "Soft Hands"],
+    crafting: ["Artisan", "Ham-Fisted"],
+    building: ["Master Builder", "All Thumbs"],
+    medicine: ["Healer's Hands", "Squeamish"],
+    combat: ["Fierce", "Timid"],
+  };
+  // trade-off (+2 / -2) — [skillUp, skillDown, name]
+  const TRADEOFF_TRAITS = [
+    ["provision", "labor", "Woodsman"], ["labor", "provision", "Drudge"],
+    ["provision", "crafting", "Field Hand"], ["crafting", "provision", "Benchwright"],
+    ["provision", "building", "Rover"], ["building", "provision", "Homesteader"],
+    ["provision", "medicine", "Hunter's Heart"], ["medicine", "provision", "Nurturer"],
+    ["provision", "combat", "Peaceful Provider"], ["combat", "provision", "Marauder"],
+    ["labor", "crafting", "Brute Force"], ["crafting", "labor", "Fine Hands"],
+    ["labor", "building", "Hauler"], ["building", "labor", "Foreman"],
+    ["labor", "medicine", "Hard Case"], ["medicine", "labor", "Soft-Spoken"],
+    ["labor", "combat", "Workhorse"], ["combat", "labor", "Brawler"],
+    ["crafting", "building", "Detailer"], ["building", "crafting", "Framer"],
+    ["crafting", "medicine", "Maker"], ["medicine", "crafting", "Folk Healer"],
+    ["crafting", "combat", "Pacifist"], ["combat", "crafting", "Gunsmith"],
+    ["building", "medicine", "Mason"], ["medicine", "building", "Mender"],
+    ["building", "combat", "Architect"], ["combat", "building", "Bruiser"],
+    ["medicine", "combat", "Medic"], ["combat", "medicine", "Butcher"],
+  ];
+  // unified trait registry: name -> { mods:{skill:delta}, incompatible:[names] }
+  const TRAITS = {};
+  for (const sk of SKILLS) {
+    const [pos, neg] = SINGLE_TRAITS[sk];
+    TRAITS[pos] = { name: pos, mods: { [sk]: 3 }, incompatible: [neg] };
+    TRAITS[neg] = { name: neg, mods: { [sk]: -3 }, incompatible: [pos] };
+  }
+  for (const [up, down, name] of TRADEOFF_TRAITS) {
+    TRAITS[name] = { name, mods: { [up]: 2, [down]: -2 }, incompatible: [] };
+  }
+  // mark mirror trade-offs incompatible (can't have +Prov/-Lab and +Lab/-Prov)
+  for (const [up, down, name] of TRADEOFF_TRAITS) {
+    const mirror = TRADEOFF_TRAITS.find(t => t[0] === down && t[1] === up);
+    if (mirror) TRAITS[name].incompatible.push(mirror[2]);
+  }
+
+  /* ----------------------------------------------------------- ARCHETYPES */
+  // bias: { skill: amount }  (primary ~3, exceptional ~5, secondary ~1-2)
+  const ARCHETYPES = [
+    { id: "farmer", name: "Farmer", bias: { provision: 3 }, traitOdds: ["Forager's Eye", "Homesteader"] },
+    { id: "hunter", name: "Hunter-Trapper", bias: { provision: 3, combat: 1 }, traitOdds: ["Hunter's Heart", "Fierce"] },
+    { id: "laborer", name: "Laborer", bias: { labor: 3 }, traitOdds: ["Ox", "Drudge"] },
+    { id: "miner", name: "Miner", bias: { labor: 3, building: 1 }, traitOdds: ["Ox", "Hard Case"] },
+    { id: "mechanic", name: "Mechanic", bias: { crafting: 3 }, traitOdds: ["Artisan", "Fine Hands"] },
+    { id: "smith", name: "Smith / Machinist", bias: { crafting: 3, labor: 1 }, traitOdds: ["Artisan", "Brute Force"] },
+    { id: "carpenter", name: "Carpenter", bias: { building: 3 }, traitOdds: ["Master Builder", "Framer"] },
+    { id: "engineer", name: "Engineer", bias: { building: 3, crafting: 1 }, traitOdds: ["Master Builder", "Detailer"] },
+    { id: "nurse", name: "Nurse / Paramedic", bias: { medicine: 3 }, traitOdds: ["Healer's Hands", "Soft-Spoken"] },
+    { id: "doctor", name: "Doctor", bias: { medicine: 5 }, traitOdds: ["Healer's Hands", "Folk Healer"] },
+    { id: "soldier", name: "Soldier / Veteran", bias: { combat: 3 }, traitOdds: ["Fierce", "Brawler"] },
+    { id: "guard", name: "Police / Guard", bias: { combat: 3, labor: 1 }, traitOdds: ["Fierce", "Workhorse"] },
+    { id: "survivalist", name: "Survivalist", bias: { provision: 3, combat: 1 }, traitOdds: ["Forager's Eye", "Marauder"] },
+    { id: "scavenger", name: "Scavenger / Drifter", bias: { labor: 3, combat: 1 }, traitOdds: ["Workhorse", "Marauder"] },
+    { id: "townie", name: "Townie", bias: {}, learns: 2, traitOdds: ["Town-Bred", "Soft Hands"] },
+  ];
+
+  /* ------------------------------------------------------------- BUILDINGS */
+  // produce: per-100-effort/day outputs (no input). recipe: {in,out} per-100-effort/day.
+  // slots: max workers. needs: gating flags. seasonal: 0-mult per season override.
+  const W = (work, mats) => ({ work, mats: mats || {} });
+  const BUILDINGS = {
+    // food
+    gatherer:   { name: "Gatherer's Hut", skill: "provision", slots: 3, build: W(120, { logs: 20 }), produce: { fruit: 9, veg: 9 } },
+    hunter:     { name: "Hunting Cabin", skill: "provision", slots: 2, build: W(140, { logs: 25 }), produce: { protein: 17, leather: 1 } },
+    fisher:     { name: "Fishing Dock", skill: "provision", slots: 2, build: W(150, { logs: 30 }), produce: { protein: 20 }, needs: "water" },
+    cropfield:  { name: "Crop Field", skill: "provision", slots: 3, build: W(100, { logs: 10 }), produce: { grain: 16, veg: 8 }, seasonal: { Winter: 0, Spring: 0.6, Summer: 1.2, Autumn: 1.4 } },
+    orchard:    { name: "Orchard", skill: "provision", slots: 2, build: W(120, { logs: 15 }), produce: { fruit: 16 }, seasonal: { Winter: 0, Spring: 0.3, Summer: 1.3, Autumn: 1.4 } },
+    pasture:    { name: "Pasture", skill: "provision", slots: 2, build: W(160, { logs: 30 }), produce: { protein: 10, leather: 1, wool: 1 }, needs: "livestock" },
+    // extraction
+    forester:   { name: "Forester", skill: "labor", slots: 3, build: W(120, { logs: 20 }), produce: { logs: 16 } },
+    quarry:     { name: "Quarry", skill: "labor", slots: 3, build: W(200, { logs: 30 }), produce: { stone: 12 } },
+    mine:       { name: "Mine", skill: "labor", slots: 3, build: W(250, { logs: 40, stone: 20 }), produce: { iron: 7, coal: 7 }, needs: "ore" },
+    herbalist:  { name: "Herbalist Hut", skill: "provision", slots: 2, build: W(100, { logs: 15 }), produce: { herbs: 10 } },
+    // refining
+    woodcutter: { name: "Woodcutter", skill: "crafting", slots: 2, build: W(100, { logs: 20 }), recipe: { in: { logs: 8 }, out: { firewood: 20 } } },
+    blacksmith: { name: "Blacksmith", skill: "crafting", slots: 2, build: W(220, { logs: 30, stone: 40 }), recipe: { in: { iron: 3, coal: 3 }, out: { tools: 4 } } },
+    tailor:     { name: "Tailor", skill: "crafting", slots: 2, build: W(140, { logs: 25 }), recipe: { in: { leather: 3 }, out: { coats: 4 } } },
+    brewery:    { name: "Brewery", skill: "crafting", slots: 2, build: W(160, { logs: 30, stone: 20 }), recipe: { in: { grain: 4 }, out: { ale: 5 } } },
+    weaponsmith:{ name: "Weaponsmith", skill: "crafting", slots: 2, build: W(240, { logs: 30, stone: 50 }), recipe: { in: { iron: 3, coal: 3 }, out: { weapons: 2, ammo: 4 } } },
+    // storage
+    stockpile:  { name: "Stockpile", skill: "building", slots: 0, build: W(40, {}), cap: { _raw: CONFIG.stockpileCap } },
+    barn:       { name: "Barn", skill: "building", slots: 0, build: W(120, { logs: 30 }), cap: { _food: CONFIG.barnCap } },
+    // living/service
+    woodhouse:  { name: "Wood House", skill: "building", slots: 0, build: W(120, { logs: 20 }), housing: 3, firewoodMult: 1.0 },
+    stonehouse: { name: "Stone House", skill: "building", slots: 0, build: W(160, { stone: 40 }), housing: 3, firewoodMult: 0.5 },
+    tavern:     { name: "Tavern", skill: "building", slots: 1, build: W(200, { logs: 40, stone: 20 }), amenity: { happiness: 8 }, consumes: { ale: 2 } },
+    chapel:     { name: "Chapel", skill: "building", slots: 0, build: W(250, { stone: 60 }), amenity: { happiness: 5 } },
+    school:     { name: "School", skill: "building", slots: 1, build: W(200, { logs: 40 }), learnMult: 2 },
+    hospital:   { name: "Hospital", skill: "medicine", slots: 2, build: W(220, { logs: 40, stone: 30 }), heal: true },
+    tradingpost:{ name: "Trading Post", skill: "building", slots: 1, build: W(180, { logs: 40 }), trade: true },
+    // combat + water
+    well:       { name: "Well", skill: "building", slots: 2, build: W(80, { stone: 30 }), produce: { water: 34 } },
+    watchtower: { name: "Watchtower", skill: "building", slots: 1, build: W(160, { logs: 30, stone: 20 }), defense: 6 },
+    wall:       { name: "Wall", skill: "building", slots: 0, build: W(300, { stone: 80 }), defense: 12 },
+  };
+
+  /* ------------------------------------------------------- MANUAL (base) JOBS */
+  // available without buildings; lower yield. resolved by `skill`.
+  const MANUAL_JOBS = {
+    forage:     { name: "Forage", skill: "provision", produce: { fruit: 6, veg: 6 } },
+    fetchwater: { name: "Fetch Water", skill: "provision", produce: { water: 22 } },
+    chopwood:   { name: "Chop Wood", skill: "labor", produce: { logs: 9 } },
+    quarrystone:{ name: "Gather Stone", skill: "labor", produce: { stone: 6 } },
+    build:      { name: "Build", skill: "building", isBuild: true },
+    watch:      { name: "Stand Watch", skill: "combat", defense: 4 },
+    scout:      { name: "Scout", skill: "provision", scout: true },
+    tend:       { name: "Tend Sick", skill: "medicine", heal: true, consumes: { herbs: 1 } },
+    rest:       { name: "Rest", skill: null, effort: 0 },
+  };
+
+  /* --------------------------------------------------------------- DECREES */
+  // effects applied while active (policies) or once (actions)
+  const DECREES = {
+    ration_food: { name: "Ration Food", type: "policy", consumeMult: { food: 0.6 }, happiness: -8 },
+    ration_firewood: { name: "Ration Firewood", type: "policy", consumeMult: { firewood: 0.6 }, warmth: -8, happiness: -5 },
+    ration_water: { name: "Ration Water", type: "policy", consumeMult: { water: 0.6 }, happiness: -6 },
+    austerity: { name: "Austerity", type: "policy", noAle: true, happiness: -6 },
+    overtime: { name: "Mandatory Overtime", type: "policy", effortBonus: 25, happiness: -7 },
+    day_of_rest: { name: "Day of Rest", type: "action", restAll: true, happiness: 6 },
+    prio_build: { name: "Prioritize Construction", type: "policy" },
+    prio_defense: { name: "Prioritize Defense", type: "policy" },
+    reserve: { name: "Strategic Reserve", type: "policy", reserveDays: 10, happiness: -3 },
+    feast: { name: "Feast", type: "action", happiness: 18, spend: { food: 12, ale: 6 } },
+    curfew: { name: "Curfew", type: "policy", defense: 4, happiness: -6 },
+    conscription: { name: "Conscription", type: "policy", happiness: -8 },
+    exile: { name: "Exile", type: "action", happiness: -10 },
+    open_gates: { name: "Open the Gates", type: "policy" },
+    trade_policy: { name: "Trade Policy", type: "policy" },
+    seize: { name: "Seize Hoards", type: "action", happiness: -12 },
+    quarantine: { name: "Quarantine", type: "policy", diseaseSlow: 0.5, happiness: -6 },
+    tonic: { name: "Tonic Distribution", type: "action", spend: { herbs: 8 }, healAll: 6 },
+  };
+
+  /* ---------------------------------------------------------------- EVENTS */
+  // weighted by location/season/state. effect(state) mutates and returns a log line.
+  const EVENTS = [
+    { id: "cold_snap", w: 1.0, loc: ["rockies"], season: ["Autumn", "Winter"], cat: "weather",
+      effect: s => { s._coldShock = 25; return "A cold snap bites — Warmth plummets."; } },
+    { id: "mild_spell", w: 0.8, cat: "weather",
+      effect: s => { s._warmShock = 15; return "A mild spell — fuel goes further, spirits lift."; } },
+    { id: "heatwave", w: 1.0, loc: ["desert"], season: ["Summer"], cat: "weather",
+      effect: s => { drain(s, "water", 8 * s.colonists.length); return "A heatwave — water vanishes."; } },
+    { id: "drought", w: 0.9, loc: ["desert"], season: ["Summer", "Autumn"], cat: "weather",
+      effect: s => { drain(s, "water", 12 * s.colonists.length); return "Drought. The wells and crops run dry."; } },
+    { id: "flood", w: 0.9, loc: ["delta"], cat: "weather",
+      effect: s => { drainFood(s, 0.12); return "Floodwaters spoil part of the stores."; } },
+    { id: "bumper", w: 0.7, cat: "weather",
+      effect: s => { add(s, "grain", 20); add(s, "veg", 15); return "A bumper harvest fills the barn."; } },
+    { id: "fever", w: 1.0, loc: ["jungle", "delta"], cat: "disease", choice: true,
+      effect: s => { sicken(s, 2); return "Fever spreads through the colony."; } },
+    { id: "plague", w: 0.4, cat: "disease",
+      effect: s => { sicken(s, 3); return "A plague takes hold."; } },
+    { id: "raid", w: 0.65, cat: "human",
+      effect: s => raid(s, 6 + Math.floor(wealth(s) / 55)) },
+    { id: "predator", w: 0.8, loc: ["rockies", "jungle"], cat: "wildlife",
+      effect: s => raid(s, 5, true) },
+    { id: "trader", w: 0.7, cat: "arrival", choice: true,
+      effect: s => { add(s, "tools", 4); return "A wandering trader passes through."; } },
+    { id: "wanderer", w: 1.3, cat: "arrival", choice: true,
+      effect: s => { if (housingFree(s) > 0) { s.colonists.push(makeColonist(s.rng, s.location, "wanderer")); return "A wanderer asks to join — and is taken in."; } return "A wanderer passes by; no room to take them in."; } },
+    { id: "cache", w: 0.6, cat: "discovery",
+      effect: s => { add(s, "iron", 10); add(s, "tools", 3); return "A scout turns up an old cache."; } },
+    { id: "oasis", w: 0.6, loc: ["desert"], cat: "discovery",
+      effect: s => { add(s, "water", 40); return "An oasis is found — water for weeks."; } },
+    { id: "pests", w: 0.6, cat: "wildlife",
+      effect: s => { drainFood(s, 0.08); return "Pests get into the grain."; } },
+    { id: "death_old_age", w: 0.3, cat: "population",
+      effect: s => { const c = oldest(s); if (c && s.colonists.length > 1) { kill(s, c, "old age"); return `${c.name} passes peacefully of old age.`; } return null; } },
+  ];
+
+  /* ------------------------------------------------------------- LOCATIONS */
+  const LOCATIONS = {
+    rockies: { name: "Canadian Rockies", coldness: 1.4, water: 1.0, foodMult: 0.9, hasWater: true, hasOre: true,
+      buildings: { fisher: 0.4 }, difficulty: "Medium" },
+    jungle: { name: "Yucatán Jungle", coldness: 0.2, water: 1.0, foodMult: 1.3, hasWater: true, hasOre: false, tainted: true,
+      buildings: { mine: 0, quarry: 0.6 }, difficulty: "Medium" },
+    desert: { name: "Sonoran Desert", coldness: 0.7, water: 0.5, foodMult: 0.65, hasWater: false, hasOre: true,
+      buildings: { fisher: 0, forester: 0.4 }, difficulty: "Hard" },
+    oregon: { name: "Coastal Oregon", coldness: 0.8, water: 1.2, foodMult: 1.2, hasWater: true, hasOre: false,
+      buildings: { mine: 0 }, difficulty: "Easy" },
+    delta: { name: "Mississippi Delta", coldness: 0.5, water: 1.1, foodMult: 1.25, hasWater: true, hasOre: false, tainted: true,
+      buildings: { mine: 0, quarry: 0.5 }, difficulty: "Med-Hard" },
+  };
+
+  /* ---------------------------------------------------------------- NAMES */
+  const FIRST = ["Mara", "Tomas", "Devi", "Cole", "Okoro", "Ines", "Silas", "Pena", "Rhea", "Joon", "Vex", "Asha", "Bram", "Lior", "Nadia", "Cyrus", "Wren", "Hale", "Suri", "Dao"];
+  const LAST = ["Okoro", "Vance", "Reyes", "Stryker", "Bell", "Cho", "Ndiaye", "Frost", "Aldridge", "Marsh", "Quill", "Vasquez", "Tran", "Oduya", "Kerr"];
+
+  /* ============================================================ RNG (seeded) */
+  function makeRng(seed) {
+    let s = (seed >>> 0) || 123456789;
+    return function () { s ^= s << 13; s ^= s >>> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; };
+  }
+  const ri = (rng, a, b) => a + Math.floor(rng() * (b - a + 1));
+  const pick = (rng, arr) => arr[Math.floor(rng() * arr.length)];
+
+  /* ============================================================ HELPERS */
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const isFood = r => FOOD_TYPES.includes(r);
+  function add(s, res, n) { s.store[res] = clamp((s.store[res] || 0) + n, 0, capFor(s, res)); }
+  function drain(s, res, n) { s.store[res] = Math.max(0, (s.store[res] || 0) - n); }
+  function totalFood(s) { return FOOD_TYPES.reduce((a, r) => a + (s.store[r] || 0), 0); }
+  function foodVariety(s) { return FOOD_TYPES.filter(r => (s.store[r] || 0) > 0.5).length; }
+  function drainFood(s, frac) { for (const r of FOOD_TYPES) s.store[r] = (s.store[r] || 0) * (1 - frac); }
+  function wealth(s) { return RESOURCES.reduce((a, r) => a + (s.store[r] || 0), 0) + Object.keys(s.buildings).length * 30; }
+  function capFor(s, res) {
+    let cap = CONFIG.baseCap;
+    for (const id in s.buildings) {
+      const b = BUILDINGS[id]; if (!b || !b.cap) continue;
+      if (b.cap._raw && !isFood(res)) cap += b.cap._raw;
+      if (b.cap._food && isFood(res)) cap += b.cap._food;
+    }
+    return cap;
+  }
+  function housing(s) { let h = CONFIG.baseHousing; for (const id in s.buildings) { const b = BUILDINGS[id]; if (b && b.housing) h += b.housing * s.buildings[id]; } return h; }
+  function housingFree(s) { return housing(s) - s.colonists.length; }
+  function season(s) { return CONFIG.SEASONS[Math.floor((s.day % CONFIG.DAYS_PER_YEAR) / CONFIG.DAYS_PER_SEASON)]; }
+  function oldest(s) { return s.colonists.slice().sort((a, b) => b.age - a.age)[0]; }
+
+  function effectiveSkill(c, skill) {
+    let v = c.skills[skill] || 0;
+    for (const t of c.traits) { const tr = TRAITS[t]; if (tr && tr.mods[skill]) v += tr.mods[skill]; }
+    return clamp(v, 0, 12);
+  }
+  const skillFactor = sk => 0.7 + Math.min(sk, 10) * 0.06;
+  const wellbeing = c => (c.hunger + c.warmth + c.health + c.happiness) / 400;
+
+  /* ============================================================ GENERATION */
+  function makeColonist(rng, locId, origin) {
+    const arch = pick(rng, ARCHETYPES);
+    const skills = {};
+    for (const sk of SKILLS) skills[sk] = ri(rng, 0, 3) + (arch.bias[sk] || 0);
+    // traits: 1-3, archetype-biased, no incompatibles
+    const traits = [];
+    const want = ri(rng, 1, 3);
+    const pool = [...(arch.traitOdds || []), ...Object.keys(TRAITS)];
+    let guard = 0;
+    while (traits.length < want && guard++ < 40) {
+      const t = pick(rng, pool);
+      if (traits.includes(t)) continue;
+      if (traits.some(x => (TRAITS[x].incompatible || []).includes(t))) continue;
+      traits.push(t);
+    }
+    const startH = origin === "rescue" ? 60 : 90;
+    return {
+      id: rng().toString(36).slice(2, 8), name: pick(rng, FIRST) + " " + pick(rng, LAST),
+      age: ri(rng, 17, 55), archetype: arch.id, learns: arch.learns || 1, traits, skills,
+      stamina: 100, hunger: 80, warmth: 65, health: startH, happiness: 72,
+      sick: 0, origin: origin || "founder", alive: true,
+    };
+  }
+
+  /* ============================================================ NEW GAME */
+  function newGame(opts) {
+    opts = opts || {};
+    const seed = opts.seed || 12345;
+    const location = opts.location || "oregon";
+    const rng = makeRng(seed);
+    const s = {
+      seed, location, rng, day: 0, hour: 0, turn: 0,
+      colonists: [], store: {}, buildings: {}, projects: [], assignments: {},
+      decrees: {}, log: [], dead: [], over: false, ending: null,
+    };
+    for (const r of RESOURCES) s.store[r] = 0;
+    // starting cache
+    Object.assign(s.store, { grain: 30, fruit: 14, veg: 10, protein: 16, water: 35, logs: 40, tools: 8 });
+    s.buildings.camp = 1; // baseline shelter/storage (virtual)
+    for (let i = 0; i < CONFIG.START_FOUNDERS; i++) s.colonists.push(makeColonist(rng, location, "founder"));
+    for (const c of s.colonists) s.assignments[c.id] = { job: "forage", effort: CONFIG.effortDefault };
+    s.colonyHealth = computeColonyHealth(s);
+    return s;
+  }
+
+  /* ===================================================== COLONY HEALTH */
+  function computeColonyHealth(s) {
+    const live = s.colonists.filter(c => c.alive);
+    if (!live.length) return 0;
+    const w = CONFIG.chWeights;
+    const vit = live.reduce((a, c) => a + (c.hunger + c.warmth + c.health + c.happiness) / 4, 0) / live.length;
+    const days = r => (s.store[r] || 0) / Math.max(1, live.length);
+    const cush = d => clamp(d / CONFIG.chCushionTargetDays, 0, 1) * 100;
+    const foodC = cush(totalFood(s) / Math.max(1, live.length));
+    const waterC = cush(days("water"));
+    const fireC = season(s) === "Winter" ? cush(days("firewood")) : 100;
+    const popC = clamp(live.length / CONFIG.START_FOUNDERS, 0, 1.2) * 83;
+    let ch = vit * w.vitals + foodC * w.food + waterC * w.water + fireC * w.firewood + popC * w.pop;
+    return clamp(Math.round(ch), 0, 100);
+  }
+
+  function turnHours(ch) { for (const [lt, hrs] of CONFIG.turnBands) if (ch < lt) return hrs; return 8640; }
+
+  /* ===================================================== COMBAT */
+  function colonyDefense(s) {
+    let d = 0;
+    for (const c of s.colonists) {
+      if (!c.alive) continue;
+      const a = s.assignments[c.id];
+      if (a && (a.job === "watch" || a.job === "watchtower")) d += effectiveSkill(c, "combat") + 4;
+    }
+    for (const id in s.buildings) { const b = BUILDINGS[id]; if (b && b.defense) d += b.defense * s.buildings[id]; }
+    if (s.decrees.curfew) d += 4;
+    if (s.decrees.prio_defense) d += 3;
+    // weapons/ammo
+    if ((s.store.weapons || 0) > 0) { d += Math.min(s.store.weapons, s.colonists.length) * 2; }
+    if ((s.store.ammo || 0) > 0) { d += 3; drain(s, "ammo", 2); }
+    return d;
+  }
+  function raid(s, strength, isAnimal) {
+    const def = colonyDefense(s) + ri(s.rng, 1, 20);
+    const margin = def - (strength + 10);
+    let line;
+    if (margin >= 10) line = isAnimal ? "Predators driven off cleanly." : "Raiders repelled without loss.";
+    else if (margin >= 0) { hurtRandom(s, 1); line = "Attack repelled — minor injuries."; }
+    else if (margin >= -5) { hurtRandom(s, 1); stealStores(s, 0.1); line = "Attackers break through — wounded, and stores stolen."; }
+    else if (margin >= -10) { const c = hurtRandom(s, 2); stealStores(s, 0.2); line = "A breach — casualties and heavy theft."; }
+    else { const c = killRandom(s); stealStores(s, 0.3); line = `Disaster: ${c ? c.name + " is lost" : "lives lost"} and the stores ransacked.`; }
+    return line;
+  }
+  function hurtRandom(s, n) { const live = s.colonists.filter(c => c.alive); for (let i = 0; i < n && live.length; i++) { const c = pick(s.rng, live); c.health = Math.max(1, c.health - 35); } }
+  function killRandom(s) { const live = s.colonists.filter(c => c.alive); if (live.length <= 0) return null; const c = pick(s.rng, live); kill(s, c, "raid"); return c; }
+  function stealStores(s, frac) { for (const r of RESOURCES) s.store[r] = (s.store[r] || 0) * (1 - frac); }
+  function sicken(s, n) { const live = s.colonists.filter(c => c.alive); for (let i = 0; i < n && live.length; i++) { const c = pick(s.rng, live); c.sick = Math.max(c.sick, 6); } }
+  function kill(s, c, cause) { c.alive = false; c.cause = cause; s.dead.push(c); delete s.assignments[c.id]; }
+
+  /* ===================================================== ONE DAY TICK */
+  function tickDay(s) {
+    const live = () => s.colonists.filter(c => c.alive);
+    const colds = season(s) === "Winter" ? CONFIG.firewoodPerDayCold * (LOCATIONS[s.location].coldness) : 0;
+    const events = [];
+
+    // ---- production
+    const haveTools = (s.store.tools || 0) > 0;
+    for (const c of live()) {
+      const a = s.assignments[c.id]; if (!a) continue;
+      let effort = a.effort != null ? a.effort : CONFIG.effortDefault;
+      if (s.decrees.overtime) effort = Math.min(CONFIG.effortMax, effort + 25);
+      if (s.decrees.day_of_rest) effort = 0;
+      const jobDef = MANUAL_JOBS[a.job] ? MANUAL_JOBS[a.job] : (s.buildings[a.job] ? BUILDINGS[a.job] : MANUAL_JOBS.forage);
+      const skl = jobDef.skill;
+      const sf = skl ? skillFactor(effectiveSkill(c, skl)) : 1;
+      const eff = (effort / 100) * sf * (haveTools ? 1 : CONFIG.noToolPenalty);
+
+      // building output
+      if (jobDef.isBuild) { addBuildProgress(s, c, eff * 60); }
+      else if (jobDef.produce) {
+        const L = LOCATIONS[s.location];
+        const seas = jobDef.seasonal ? (jobDef.seasonal[season(s)] != null ? jobDef.seasonal[season(s)] : 1) : 1;
+        for (const r in jobDef.produce) {
+          let m = eff * seas;
+          if (isFood(r)) m *= L.foodMult;
+          if (r === "water") m *= L.water;
+          add(s, r, jobDef.produce[r] * m);
+        }
+      } else if (jobDef.recipe) {
+        const scale = recipeScale(s, jobDef.recipe, eff);
+        for (const r in jobDef.recipe.in) drain(s, r, jobDef.recipe.in[r] * scale);
+        for (const r in jobDef.recipe.out) add(s, r, jobDef.recipe.out[r] * scale);
+      } else if (jobDef.heal) {
+        // handled in vitals (medic)
+      }
+      // tool wear
+      if (haveTools && effort > 0) drain(s, "tools", CONFIG.toolUsePerWorkerDay);
+      // learning by doing
+      if (skl && effort > 0) c.skills[skl] = Math.min(10, c.skills[skl] + 0.01 * c.learns);
+      // stamina
+      const rec = CONFIG.recoveryBase * wellbeing(c);
+      c.stamina = clamp(c.stamina + rec - effort, 0, 100);
+    }
+
+    // building passive consumption (tavern uses ale)
+    for (const id in s.buildings) { const b = BUILDINGS[id]; if (b && b.consumes) for (const r in b.consumes) drain(s, r, b.consumes[r] * s.buildings[id]); }
+
+    // ---- consumption: food
+    const pop = live().length;
+    let foodMult = s.decrees.ration_food ? 0.6 : 1;
+    let need = pop * CONFIG.foodPerDay * foodMult;
+    const fed = consumeFood(s, need);
+    const variety = foodVariety(s);
+    // water
+    let waterNeed = pop * CONFIG.waterPerDay * (s.decrees.ration_water ? 0.6 : 1);
+    const waterOK = (s.store.water || 0) >= waterNeed; drain(s, "water", waterNeed);
+    // firewood (cold)
+    let fireShort = false;
+    if (colds > 0) {
+      let fwMult = 1; for (const id in s.buildings) { const b = BUILDINGS[id]; if (b && b.firewoodMult != null) fwMult = Math.min(fwMult, b.firewoodMult); }
+      let fwNeed = pop * colds * fwMult * (s.decrees.ration_firewood ? 0.6 : 1);
+      fireShort = (s.store.firewood || 0) < fwNeed; drain(s, "firewood", fwNeed);
+    }
+
+    // ---- vitals per colonist
+    const amenityHappy = amenity(s);
+    const hospital = !!s.buildings.hospital;
+    for (const c of live()) {
+      // hunger
+      if (fed >= 1) c.hunger = clamp(c.hunger + CONFIG.eatGain, 0, 100);
+      else c.hunger = clamp(c.hunger - CONFIG.starveLoss * (1 - fed), 0, 100);
+      // warmth target
+      let target = 80;
+      if (colds > 0) { target = fireShort ? 25 : 70; if ((s.store.coats || 0) > 0) { target += 12; drain(s, "coats", CONFIG.coatUsePerColdDay); } }
+      else target = 85;
+      if (s.decrees.ration_firewood) target -= 8;
+      c.warmth = clamp(c.warmth + (target - c.warmth) * CONFIG.warmthApproach, 0, 100);
+      // sickness
+      if (c.sick > 0) { c.sick -= (s.decrees.quarantine ? 1.5 : 1); }
+      // health
+      let dh = 0; let drainCause = null; let worst = 0;
+      const note = (loss, cause) => { dh -= loss; if (loss > worst) { worst = loss; drainCause = cause; } };
+      if (c.hunger < 25) note(CONFIG.starveHealthLoss, "starvation");
+      if (c.warmth < 25) note(CONFIG.coldHealthLoss, "exposure");
+      if (!waterOK) note(CONFIG.thirstHealthLoss, "thirst");
+      if (c.sick > 0) note(CONFIG.sickHealthLoss * (hospital ? 0.4 : 1), "sickness");
+      if (dh === 0) { dh += CONFIG.healRest; if (hospital) dh += CONFIG.healHospital * 0.3; if (variety >= 3) dh += 2; }
+      else c._lastDrain = drainCause;
+      c.health = clamp(c.health + dh, 0, 100);
+      // happiness
+      let ht = wellbeing(c) * 100 * 0.6 + amenityHappy;
+      if (variety >= 3) ht += CONFIG.varietyBonus;
+      ht -= decreeHappy(s);
+      c.happiness = clamp(c.happiness + (ht - c.happiness) * CONFIG.happinessApproach, 0, 100);
+      // death
+      if (c.health <= 0) { kill(s, c, c._lastDrain || "illness"); events.push(`${c.name} has died (${c.cause}).`); }
+    }
+
+    // spoilage without barn
+    if (!s.buildings.barn) for (const r of FOOD_TYPES) s.store[r] = (s.store[r] || 0) * (1 - CONFIG.spoilNoBarn);
+
+    // ---- medic healing (tend job / hospital)
+    for (const c of live()) { const a = s.assignments[c.id]; if (a && (a.job === "tend" || a.job === "hospital") && (s.store.herbs || 0) > 0) { drain(s, "herbs", 1); const sickest = live().sort((x, y) => x.health - y.health)[0]; if (sickest) sickest.health = clamp(sickest.health + CONFIG.healHerbTonic, 0, 100); } }
+
+    s.day++;
+    return events;
+  }
+
+  function consumeFood(s, need) {
+    const have = totalFood(s); if (have <= 0) return 0;
+    const ratio = Math.min(1, need / have);
+    let consumed = 0;
+    for (const r of FOOD_TYPES) { const take = (s.store[r] || 0) * ratio; s.store[r] -= take; consumed += take; }
+    return Math.min(1, consumed / Math.max(0.001, need));
+  }
+  function recipeScale(s, recipe, eff) {
+    let scale = eff;
+    for (const r in recipe.in) { const avail = s.store[r] || 0; const want = recipe.in[r] * eff; if (want > avail) scale = Math.min(scale, (avail / recipe.in[r]) || 0); }
+    return Math.max(0, scale);
+  }
+  function amenity(s) { let h = 0; for (const id in s.buildings) { const b = BUILDINGS[id]; if (b && b.amenity && b.amenity.happiness) { if (id === "tavern" && (s.store.ale || 0) <= 0) continue; h += b.amenity.happiness * s.buildings[id]; } } return h; }
+  function decreeHappy(s) { let p = 0; for (const id in s.decrees) { if (!s.decrees[id]) continue; const d = DECREES[id]; if (d && d.happiness && d.happiness < 0) p += -d.happiness; } return p; }
+  function addBuildProgress(s, c, amt) {
+    const proj = s.projects.find(p => p.active) || s.projects[0];
+    if (!proj) return;
+    proj.work += amt;
+    if (proj.work >= BUILDINGS[proj.id].build.work) finishProject(s, proj);
+  }
+  function finishProject(s, proj) {
+    s.buildings[proj.id] = (s.buildings[proj.id] || 0) + 1;
+    s.projects = s.projects.filter(p => p !== proj);
+    s.log.push(`Built: ${BUILDINGS[proj.id].name}.`);
+    // reassign builders to operate? leave to controller
+  }
+  function startProject(s, id) {
+    const b = BUILDINGS[id]; if (!b) return false;
+    for (const r in b.build.mats) if ((s.store[r] || 0) < b.build.mats[r]) return false;
+    for (const r in b.build.mats) drain(s, r, b.build.mats[r]);
+    s.projects.push({ id, work: 0, active: true });
+    return true;
+  }
+
+  /* ===================================================== ADVANCE TURN */
+  function advanceTurn(s) {
+    if (s.over) return { over: true };
+    const hours = turnHours(s.colonyHealth);
+    const days = Math.max(1, Math.round(hours / 24)); // sub-day tiers collapse to >=1 day of sim, but turn label keeps hours
+    const startDay = s.day; const logs = [];
+    let interrupted = false;
+    const maxDays = hours < 24 ? 1 : days;
+    for (let d = 0; d < maxDays; d++) {
+      const ev = tickDay(s);
+      logs.push(...ev);
+      // storyteller event check (per day)
+      if (s.rng() < eventChance(s)) { const line = fireEvent(s); if (line) logs.push(line); interrupted = true; }
+      if (s.colonists.filter(c => c.alive).length === 0) { s.over = true; s.ending = "The colony is gone."; break; }
+      if (ev.length || interrupted) break; // threshold/event interrupt
+    }
+    s.turn++; s.hour += hours;
+    s.colonyHealth = computeColonyHealth(s);
+    if (s.colonists.filter(c => c.alive).length === 0) { s.over = true; s.ending = s.ending || "The colony is gone."; }
+    return { over: s.over, turnHours: hours, daysElapsed: s.day - startDay, season: season(s), log: logs, colonyHealth: s.colonyHealth };
+  }
+  function eventChance(s) { return CONFIG.eventChancePerDay * (0.5 + wealth(s) / 600) * (0.6 + s.colonists.length * 0.1); }
+  function fireEvent(s) {
+    const seas = season(s); const loc = s.location;
+    const pool = EVENTS.filter(e => (!e.loc || e.loc.includes(loc)) && (!e.season || e.season.includes(seas)));
+    if (!pool.length) return null;
+    const total = pool.reduce((a, e) => a + e.w, 0); let r = s.rng() * total;
+    for (const e of pool) { r -= e.w; if (r <= 0) return e.effect(s); }
+    return null;
+  }
+
+  /* ===================================================== SAVE / LOAD */
+  const SAVE_VERSION = 1;
+  function serialize(s) { const { rng, ...rest } = s; return JSON.stringify({ v: SAVE_VERSION, seed: s.seed, rngState: null, state: rest }); }
+  function deserialize(json) {
+    const o = JSON.parse(json); const s = o.state; s.rng = makeRng((s.seed || 1) + s.turn * 7 + s.day * 13); return s;
+  }
+
+  return {
+    CONFIG, RESOURCES, FOOD_TYPES, SKILLS, TRAITS, ARCHETYPES, BUILDINGS, MANUAL_JOBS,
+    DECREES, EVENTS, LOCATIONS,
+    makeRng, newGame, advanceTurn, tickDay, computeColonyHealth, turnHours,
+    startProject, effectiveSkill, skillFactor, season, totalFood, foodVariety,
+    housing, housingFree, wealth, colonyDefense, makeColonist, serialize, deserialize,
+    SAVE_VERSION,
+  };
+}));
+
+</script>
+  <script>
+/* Hollow Frontier — UI controller (browser). Uses window.CORE. */
+(function () {
+  "use strict";
+  const C = window.CORE;
+  const $ = id => document.getElementById(id);
+  const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+  const SAVE = "hollow_frontier_save_v1";
+
+  let S = null;          // game state
+  let page = "briefing";
+  let lastBrief = null;  // last advance result
+  let setup = { location: "oregon", founders: [], seed: 0 };
+
+  /* ---------------- setup ---------------- */
+  function initSetup() {
+    setup.seed = (Date.now() & 0xffffff) || 7;
+    // locations
+    const ll = $("loc-list"); ll.innerHTML = "";
+    Object.keys(C.LOCATIONS).forEach(id => {
+      const l = C.LOCATIONS[id];
+      const c = el("div", "loc-card" + (id === setup.location ? " sel" : ""));
+      c.innerHTML = `<h3>${l.name}</h3><div class="d">${l.difficulty}</div><p>${locBlurb(id)}</p>`;
+      c.onclick = () => { setup.location = id; [...ll.children].forEach(x => x.classList.remove("sel")); c.classList.add("sel"); };
+      ll.appendChild(c);
+    });
+    rollFounders();
+    $("begin").onclick = beginGame;
+  }
+  function locBlurb(id) {
+    return ({
+      rockies: "Brutal winters, rich timber & stone, well hidden. Survive the cold.",
+      jungle: "Warm and fed year-round — but fever stalks the careless.",
+      desert: "Water is everything here, and there's never enough. Hardest start.",
+      oregon: "Mild, wet, and bountiful by sea and forest. The gentlest refuge.",
+      delta: "Abundant and busy — disease, floods, and visitors both kind and cruel.",
+    })[id] || "";
+  }
+  function rollFounders() {
+    const rng = C.makeRng(setup.seed);
+    setup.founders = [];
+    for (let i = 0; i < C.CONFIG.START_FOUNDERS; i++) setup.founders.push({ seed: (setup.seed * 131 + i * 977) >>> 0, rerolls: C.CONFIG.REROLLS });
+    renderFounders();
+  }
+  function renderFounders() {
+    const fl = $("founder-list"); fl.innerHTML = "";
+    setup.founders.forEach((f, i) => {
+      const c = makeFounderPreview(f.seed);
+      f._c = c;
+      const card = el("div", "founder");
+      card.innerHTML = `<div class="top"><h4>${c.name}, ${c.age}</h4>
+        <button class="btn sm" ${f.rerolls <= 0 ? "disabled style='opacity:.4'" : ""}>↻ ${f.rerolls}</button></div>
+        <div class="sk">${C.SKILLS.map(s => cap(s) + " " + c.skills[s]).join(" · ")}</div>
+        <div class="tr">${archName(c.archetype)} — ${c.traits.join(", ") || "no notable traits"}</div>`;
+      const btn = card.querySelector("button");
+      btn.onclick = () => { if (f.rerolls <= 0) return; f.rerolls--; f.seed = (f.seed * 1103515245 + 12345) >>> 0; renderFounders(); };
+      fl.appendChild(card);
+    });
+  }
+  function makeFounderPreview(seed) { return C.makeColonist(C.makeRng(seed), setup.location, "founder"); }
+  function archName(id) { const a = C.ARCHETYPES.find(x => x.id === id); return a ? a.name : id; }
+  const cap = s => s[0].toUpperCase() + s.slice(1, 4);
+
+  function beginGame() {
+    S = C.newGame({ seed: setup.seed, location: setup.location });
+    // replace founders with chosen previews
+    S.colonists = setup.founders.map(f => { const c = C.makeColonist(C.makeRng(f.seed), setup.location, "founder"); return c; });
+    S.assignments = {};
+    startingAssignments();
+    S.colonyHealth = C.computeColonyHealth(S);
+    lastBrief = { log: ["The wagons stop. This is the place. Set your people to work before night falls."], season: C.season(S), turnHours: C.turnHours(S.colonyHealth) };
+    saveGame(); show("game"); page = "briefing"; render();
+  }
+  // sensible starting spread that covers food + water, by skill fit; player can change freely
+  function startingAssignments() {
+    const pop = S.colonists.length;
+    const quota = ["fetchwater", "forage", "forage"];
+    while (quota.length < pop) quota.push(quota.length === 3 ? "build" : quota.length === 4 ? "chopwood" : "forage");
+    const avail = S.colonists.slice();
+    quota.forEach(job => {
+      if (!avail.length) return;
+      const skl = (C.MANUAL_JOBS[job] || {}).skill;
+      if (skl) avail.sort((a, b) => C.effectiveSkill(b, skl) - C.effectiveSkill(a, skl));
+      const c = avail.shift();
+      S.assignments[c.id] = { job, effort: 45 };
+    });
+    avail.forEach(c => S.assignments[c.id] = { job: "forage", effort: 45 });
+  }
+
+  /* ---------------- screens ---------------- */
+  function show(name) { document.querySelectorAll(".screen").forEach(s => s.classList.remove("active")); $(name).classList.add("active"); }
+
+  /* ---------------- status bar + tabs ---------------- */
+  function renderStatus() {
+    const seas = C.season(S);
+    $("sb-time").innerHTML = `Day ${S.day}<small>${seas} · Yr ${1 + Math.floor(S.day / 360)}</small>`;
+    $("ch-num").textContent = S.colonyHealth;
+    $("ch-fill").style.width = S.colonyHealth + "%";
+    $("adv-len").textContent = turnLabel(C.turnHours(S.colonyHealth));
+    if (S.over) { $("advance").textContent = "— ended —"; $("advance").disabled = true; }
+  }
+  function turnLabel(h) { return h < 24 ? "1 hour" : h < 168 ? "1 day" : h < 720 ? "1 week" : h < 2160 ? "1 month" : h < 8640 ? "1 season" : "1 year"; }
+
+  /* ---------------- render dispatch ---------------- */
+  function render() {
+    renderStatus();
+    document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.page === page));
+    const p = $("page"); p.scrollTop = 0;
+    if (page === "briefing") p.innerHTML = "", p.appendChild(viewBriefing());
+    else if (page === "colony") p.innerHTML = "", p.appendChild(viewColony());
+    else if (page === "people") p.innerHTML = "", p.appendChild(viewPeople());
+    else if (page === "jobs") p.innerHTML = "", p.appendChild(viewJobs());
+  }
+
+  /* ---------------- briefing ---------------- */
+  function viewBriefing() {
+    const f = document.createDocumentFragment();
+    if (S.over) {
+      const c = el("div", "card");
+      c.innerHTML = `<h3>The colony is gone</h3><p>${S.ending || ""}</p>
+        <p class="muted">It lasted <b>${S.day} days</b> — ${(S.day / 360).toFixed(1)} years. ${S.dead.length} laid to rest.</p>`;
+      const b = el("button", "btn primary", "New Colony"); b.style.marginTop = "8px"; b.onclick = () => { localStorage.removeItem(SAVE); location.reload(); };
+      c.appendChild(b); f.appendChild(c);
+      return f;
+    }
+    const w = el("div", "card");
+    w.innerHTML = `<h3>What happened — past ${lastBrief ? turnLabel(lastBrief.turnHours) : "while"}</h3>`;
+    const log = (lastBrief && lastBrief.log && lastBrief.log.length) ? lastBrief.log : ["A quiet stretch. Nothing of note."];
+    log.forEach(line => w.appendChild(el("div", "logline", line)));
+    f.appendChild(w);
+
+    // quick state
+    const q = el("div", "card"); q.innerHTML = "<h3>State of the colony</h3>";
+    q.appendChild(quickRes());
+    f.appendChild(q);
+    return f;
+  }
+  function quickRes() {
+    const pop = live().length;
+    const g = el("div", "res-grid");
+    const foodDays = (C.totalFood(S) / Math.max(1, pop) / C.CONFIG.foodPerDay);
+    const waterDays = ((S.store.water || 0) / Math.max(1, pop) / C.CONFIG.waterPerDay);
+    const fwDays = ((S.store.firewood || 0) / Math.max(1, pop * C.CONFIG.firewoodPerDayCold * C.LOCATIONS[S.location].coldness));
+    g.appendChild(resBox("People", pop, false));
+    g.appendChild(resBox("Food", days(foodDays), foodDays < 8));
+    g.appendChild(resBox("Water", days(waterDays), waterDays < 8));
+    g.appendChild(resBox("Firewood", C.season(S) === "Winter" ? days(fwDays) : "—", C.season(S) === "Winter" && fwDays < 8));
+    g.appendChild(resBox("Variety", C.foodVariety(S) + "/4", C.foodVariety(S) < 2));
+    g.appendChild(resBox("Buildings", Object.keys(S.buildings).filter(b => b !== "camp").length, false));
+    return g;
+  }
+  const days = d => isFinite(d) ? Math.floor(d) + "d" : "∞";
+  function resBox(k, v, low) { const e = el("div", "res" + (low ? " low" : "")); e.innerHTML = `<span class="muted">${k}</span><b>${v}</b>`; return e; }
+
+  /* ---------------- colony ---------------- */
+  function viewColony() {
+    const f = document.createDocumentFragment();
+    // resources
+    const r = el("div", "card"); r.innerHTML = "<h3>Stores</h3>";
+    const grid = el("div", "res-grid");
+    const groups = [["grain", "fruit", "veg", "protein"], ["water", "firewood"], ["logs", "stone", "iron", "coal"], ["herbs", "leather", "wool"], ["tools", "coats", "ale", "weapons", "ammo"]];
+    groups.flat().forEach(res => { const v = S.store[res] || 0; if (v < 0.5 && !["water", "logs", "tools"].includes(res)) return; grid.appendChild(resBox(cap2(res), Math.floor(v), false)); });
+    r.appendChild(grid); f.appendChild(r);
+
+    // projects
+    const pr = el("div", "card"); pr.innerHTML = "<h3>Construction</h3>";
+    if (S.projects.length) S.projects.forEach(p => {
+      const b = C.BUILDINGS[p.id]; const pct = Math.min(100, p.work / b.build.work * 100);
+      const v = el("div", "vit"); v.innerHTML = `<div class="lab"><span>${b.name}</span><span>${pct.toFixed(0)}%</span></div><div class="bar"><i style="width:${pct}%;background:var(--accent2)"></i></div>`;
+      pr.appendChild(v);
+    });
+    else pr.appendChild(el("div", "muted", "Nothing under construction."));
+    const bb = el("button", "btn", "+ Start a building"); bb.style.marginTop = "8px"; bb.onclick = openBuildSheet; pr.appendChild(bb);
+    f.appendChild(pr);
+
+    // buildings owned
+    const ob = el("div", "card"); ob.innerHTML = "<h3>Standing</h3>";
+    const owned = Object.keys(S.buildings).filter(b => b !== "camp");
+    ob.appendChild(el("div", owned.length ? "" : "muted", owned.length ? owned.map(id => `<span class="tag" style="margin:2px">${C.BUILDINGS[id].name}${S.buildings[id] > 1 ? " ×" + S.buildings[id] : ""}</span>`).join(" ") : "Just the camp, for now."));
+    f.appendChild(ob);
+
+    // decrees
+    const dc = el("div", "card"); dc.innerHTML = "<h3>Decrees <span class='muted' style='text-transform:none;letter-spacing:0;font-size:11px'>— cost goodwill</span></h3>";
+    Object.keys(C.DECREES).forEach(id => {
+      const d = C.DECREES[id]; const on = !!S.decrees[id];
+      const row = el("div", "row");
+      row.innerHTML = `<div class="nm"><b>${d.name}</b> <span class="tag">${d.type}</span><div class="s">${d.happiness ? (d.happiness < 0 ? d.happiness + " goodwill" : "+" + d.happiness) : ""}</div></div>`;
+      const btn = el("button", "btn sm", d.type === "action" ? "Do it" : (on ? "On" : "Off"));
+      if (d.type !== "action" && on) btn.classList.add("primary");
+      btn.onclick = () => toggleDecree(id);
+      row.appendChild(btn); dc.appendChild(row);
+    });
+    f.appendChild(dc);
+    return f;
+  }
+  function toggleDecree(id) {
+    const d = C.DECREES[id];
+    if (d.type === "action") { applyAction(id); }
+    else S.decrees[id] = !S.decrees[id];
+    saveGame(); render();
+  }
+  function applyAction(id) {
+    const d = C.DECREES[id];
+    if (d.spend) for (const r in d.spend) S.store[r] = Math.max(0, (S.store[r] || 0) - d.spend[r]);
+    if (d.healAll) live().forEach(c => c.health = Math.min(100, c.health + d.healAll));
+    if (d.happiness) live().forEach(c => c.happiness = Math.min(100, Math.max(0, c.happiness + d.happiness)));
+    if (id === "feast") live().forEach(c => c.happiness = Math.min(100, c.happiness + 18));
+    toast(d.name + " enacted.");
+  }
+
+  function openBuildSheet() {
+    const loc = C.LOCATIONS[S.location];
+    let html = "<h3>Start a building</h3>";
+    Object.keys(C.BUILDINGS).forEach(id => {
+      if (id === "camp") return;
+      const b = C.BUILDINGS[id]; const gate = (loc.buildings && loc.buildings[id] != null) ? loc.buildings[id] : 1;
+      if (gate <= 0) return;
+      const afford = Object.keys(b.build.mats).every(r => (S.store[r] || 0) >= b.build.mats[r]);
+      const mats = Object.entries(b.build.mats).map(([r, n]) => `${n} ${cap2(r)}`).join(", ") || "no materials";
+      html += `<div class="opt ${afford ? "" : "disabled"}" data-id="${id}"><div class="oi">${b.name}<small>${b.build.work}w · ${mats}${b.skill ? " · " + cap2(b.skill) : ""}</small></div><button class="btn sm ${afford ? "primary" : ""}" ${afford ? "" : "disabled"}>Build</button></div>`;
+    });
+    openSheet(html);
+    $("sheet").querySelectorAll(".opt").forEach(o => { const id = o.dataset.id; const btn = o.querySelector("button"); if (!btn.disabled) btn.onclick = () => { if (C.startProject(S, id)) { toast("Construction begun: " + C.BUILDINGS[id].name); closeSheet(); saveGame(); render(); } }; });
+  }
+
+  /* ---------------- people ---------------- */
+  function viewPeople() {
+    const f = document.createDocumentFragment();
+    live().forEach(c => {
+      const card = el("div", "card");
+      const job = S.assignments[c.id] ? jobName(S.assignments[c.id].job) : "idle";
+      card.innerHTML = `<h3 style="color:var(--text);text-transform:none;letter-spacing:0;font-size:16px">${c.name}, ${c.age} <span class="tag">${archName(c.archetype)}</span></h3>
+        <div class="muted" style="font-size:12px;margin:-4px 0 8px">Working: ${job}${c.sick > 0 ? " · <span style='color:var(--danger)'>ill</span>" : ""}</div>`;
+      card.appendChild(vit("Stamina", c.stamina, "var(--accent)"));
+      card.appendChild(vit("Hunger", c.hunger, "var(--accent2)"));
+      card.appendChild(vit("Warmth", c.warmth, "var(--cold)"));
+      card.appendChild(vit("Health", c.health, "var(--good)"));
+      card.appendChild(vit("Happiness", c.happiness, "var(--accent)"));
+      card.appendChild(el("div", "sk", C.SKILLS.map(s => `<span class="tag" style="margin:2px">${cap2(s)} ${C.effectiveSkill(c, s)}</span>`).join(" ")));
+      if (c.traits.length) card.appendChild(el("div", "tr", c.traits.map(t => `<span class="tag" style="margin:2px;border-color:#3a4d28">${t}</span>`).join(" ")));
+      f.appendChild(card);
+    });
+    return f;
+  }
+  function vit(label, val, color) {
+    const e = el("div", "vit"); const low = val < 30;
+    e.innerHTML = `<div class="lab"><span>${label}</span><span style="${low ? "color:var(--danger)" : ""}">${Math.round(val)}</span></div><div class="bar"><i style="width:${val}%;background:${low ? "var(--danger)" : color}"></i></div>`;
+    return e;
+  }
+
+  /* ---------------- jobs ---------------- */
+  function viewJobs() {
+    const f = document.createDocumentFragment();
+    const intro = el("div", "card"); intro.innerHTML = `<h3>Standing orders</h3><div class="muted" style="font-size:12.5px">Assign each colonist a job and how hard they push. Orders persist until you change them. <b>Rest</b> recovers stamina.</div>`;
+    f.appendChild(intro);
+    const list = el("div", "card");
+    live().forEach(c => {
+      const a = S.assignments[c.id] || (S.assignments[c.id] = { job: "forage", effort: 45 });
+      const row = el("div", "row");
+      const nm = el("div", "nm", `<b>${c.name.split(" ")[0]}</b><div class="s">${bestSkillLabel(c)}</div>`);
+      const jb = el("button", "jobpick", jobName(a.job)); jb.onclick = () => openJobSheet(c);
+      const seg = el("div", "seg");
+      [["Rest", 0], ["Steady", 45], ["Hard", 80]].forEach(([lab, val]) => {
+        const b = el("button", a.effort === val ? "on" : "", lab);
+        b.onclick = () => { a.effort = val; saveGame(); render(); };
+        seg.appendChild(b);
+      });
+      row.appendChild(nm); row.appendChild(jb); row.appendChild(seg);
+      list.appendChild(row);
+    });
+    f.appendChild(list);
+    return f;
+  }
+  function bestSkillLabel(c) { const s = C.SKILLS.slice().sort((a, b) => C.effectiveSkill(c, b) - C.effectiveSkill(c, a))[0]; return cap2(s) + " " + C.effectiveSkill(c, s); }
+  function openJobSheet(c) {
+    let html = `<h3>${c.name.split(" ")[0]} — assign job</h3>`;
+    const jobs = [];
+    Object.keys(C.MANUAL_JOBS).forEach(id => jobs.push([id, C.MANUAL_JOBS[id], true]));
+    Object.keys(S.buildings).forEach(id => { if (id !== "camp" && C.BUILDINGS[id]) jobs.push([id, C.BUILDINGS[id], false]); });
+    jobs.forEach(([id, def, manual]) => {
+      const skl = def.skill;
+      const fit = skl ? ` · ${cap2(skl)} ${C.effectiveSkill(c, skl)}` : "";
+      html += `<div class="opt" data-id="${id}"><div class="oi">${jobName(id)}<small>${manual ? "anywhere" : "building"}${fit}</small></div><span class="tag">pick</span></div>`;
+    });
+    openSheet(html);
+    $("sheet").querySelectorAll(".opt").forEach(o => o.onclick = () => { S.assignments[c.id].job = o.dataset.id; closeSheet(); saveGame(); render(); });
+  }
+  function jobName(id) { return (C.MANUAL_JOBS[id] && C.MANUAL_JOBS[id].name) || (C.BUILDINGS[id] && C.BUILDINGS[id].name) || id; }
+
+  /* ---------------- advance ---------------- */
+  function doAdvance() {
+    if (S.over) return;
+    lastBrief = C.advanceTurn(S);
+    saveGame();
+    page = "briefing"; render();
+    if (S.over) { /* stay on briefing */ }
+  }
+
+  /* ---------------- sheet / toast ---------------- */
+  function openSheet(html) { $("sheet").innerHTML = html; $("overlay").classList.add("active"); }
+  function closeSheet() { $("overlay").classList.remove("active"); }
+  let toastT;
+  function toast(msg) {
+    let t = $("toast"); if (!t) { t = el("div", ""); t.id = "toast"; t.style.cssText = "position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--accent);color:var(--text);padding:10px 16px;border-radius:24px;font-size:13px;z-index:30;box-shadow:var(--shadow);transition:opacity .2s;"; document.body.appendChild(t); }
+    t.textContent = msg; t.style.opacity = "1"; clearTimeout(toastT); toastT = setTimeout(() => t.style.opacity = "0", 1800);
+  }
+
+  /* ---------------- save/load ---------------- */
+  function saveGame() { try { localStorage.setItem(SAVE, C.serialize(S)); } catch (e) {} }
+  function loadGame() { try { const j = localStorage.getItem(SAVE); if (!j) return false; S = C.deserialize(j); return true; } catch (e) { return false; } }
+
+  const live = () => S.colonists.filter(c => c.alive);
+  const cap2 = s => s[0].toUpperCase() + s.slice(1);
+
+  /* ---------------- boot ---------------- */
+  window.addEventListener("DOMContentLoaded", () => {
+    $("advance").onclick = doAdvance;
+    document.querySelectorAll(".tab").forEach(t => t.onclick = () => { page = t.dataset.page; render(); });
+    $("overlay").onclick = e => { if (e.target === $("overlay")) closeSheet(); };
+    if (loadGame() && !S.over) { lastBrief = { log: ["Welcome back."], turnHours: C.turnHours(S.colonyHealth) }; show("game"); render(); }
+    else initSetup();
+  });
+})();
+
+</script>
+</body>
+</html>

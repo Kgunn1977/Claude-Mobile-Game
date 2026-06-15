@@ -1,62 +1,51 @@
-# SIGNAL // The Meridian Incident
+# Hollow Frontier
 
-A story-rich **sci-fi mystery RPG** built to run on a phone, offline, with no build step.
+A turn-based **colony-leadership story generator** for mobile. Society has
+collapsed; you lead a small band to a hidden corner of North America and give the
+orders — your people, their flaws, and the dice make the story.
 
-> A drifting research vessel. A crew that vanished. A voice in the dark that knows your name.
+> Inspired by **Banished** (the resource economy), **RimWorld** (emergent,
+> trait-driven drama), and **D&D** (d20 resolution). Runs offline, no build step.
 
 ## Play it
+Open **`play.html`** in any browser — it's a single self-contained file (download
+it from GitHub onto your phone and open it). Progress auto-saves to the device.
 
-Open **`index.html`** in any browser (mobile or desktop). That's it — no install, no server, no internet required. Your progress saves automatically to the device.
+For development, `index.html` loads the same game from `src/`.
 
-On a phone: download the four files (`index.html`, `game.css`, `game.js`, `story.js`) into one folder and open `index.html`.
+## What's here
 
-## What's in it
-
-- **4 specializations** (Engineer, Medic, Security, Analyst) — each changes which skill checks you pass and what you can discover.
-- **Branching investigation** across the cryo bay, medbay, maintenance, and command deck.
-- **Skill checks** (Tech / Logic / Bio / Nerve) with transparent dice rolls.
-- **Inventory & usable items** (medkits, stims, keycard, override rod…).
-- **Health + Composure** survival stats — let either hit zero and you're lost.
-- **Investigation Log** that tracks every clue you uncover.
-- **5 distinct endings** shaped by what you learned and the choices you made.
-- **Auto-save** via `localStorage`; "Continue" resumes your run.
-
-## Project layout
-
-| File | Purpose |
+| Path | Purpose |
 |------|---------|
-| `index.html` | Screens (title, character creation, game, overlays) |
-| `game.css` | Mobile-first dark sci-fi styling |
-| `game.js` | Engine: state, skill checks, save/load, UI |
-| `story.js` | All content — scenes, choices, items, classes (data-driven) |
+| `DESIGN.md` | The full locked design spec |
+| `src/core.js` | Data-driven simulation engine (economy, colonists, turns) — runs in Node *and* the browser |
+| `src/ui.js` | Mobile UI controller (setup, the four pages, assignments, advance) |
+| `index.html` | App shell + styling |
+| `build.js` | Inlines core + ui into the single-file `play.html` |
+| `play.html` | **The game** — single-file, offline |
+| `test/validate.js` | Content integrity + runtime invariants |
+| `sim/harness.js` | Headless balance harness: autopilot bots + Monte-Carlo sweep |
+| `prototype-signal/` | An earlier text-adventure prototype, kept for reference |
 
-### Adding to the story
+## The loop
+- Turns are **variable length, set by Colony Health** — a struggling colony is
+  managed hour-by-hour; a thriving one coasts a year at a time.
+- Each turn opens on the **Briefing** (what happened). Set **standing job
+  assignments** and **decrees**, then **Advance**.
+- Survive the seasons: food (4 diet types), water, firewood for winter, defense
+  against raids — and keep your people fed, warm, healthy, and content.
 
-Everything narrative lives in `story.js`. A scene looks like:
-
-```js
-scene_id: {
-  art: { glyph: "🔧", color: "#41e0c4" },   // optional banner
-  text: `<p>What the player reads.</p>`,
-  onEnter: (S) => { S.flags.something = true; }, // optional
-  choices: [
-    { text: "A plain choice", to: "next_scene" },
-    { text: "A skill check", check: { skill: "tech", dc: 8, success: "win", fail: "lose" }, tag: "skill" },
-    { text: "Needs an item", to: "secret", requires: { item: "keycard" }, tag: "item" },
-    { text: "Has a side effect", to: "x", effect: { addItem: "stim", comp: -5, toast: "..." } },
-  ],
-}
-```
-
-Run the link-checker any time after editing:
-
+## Develop / test
 ```bash
-node -e 'require("./story.js")'   # (or the validator used during development)
+node test/validate.js     # content + invariants (must pass)
+node sim/harness.js        # balance sweep across locations
+node build.js              # regenerate play.html
 ```
+The harness is the balance safety net: a competent autopilot bot should survive,
+a naive one should fail. Re-run it after any change to numbers or content.
 
-## Roadmap ideas
-
-- Chapter 2: descend to the anomaly itself.
-- Companion system (Vance as an ally with her own arc).
-- Sound design (ambient hum + the three-second signal).
-- More skill-gated lore for replay value across the four classes.
+## Status
+Playable v1: setup (location + founder rerolls), the full economy, colonists with
+skills/traits/vitals, buildings & projects, decrees, seasons, events, raids, and
+save/load. Deferred: interactive event choices, births, conquest, trade depth,
+and the Chronicle screen.

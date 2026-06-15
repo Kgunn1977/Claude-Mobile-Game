@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0b0e0a" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>Hollow Frontier</title>
+<style>
+:root{
+  --bg:#0b0e0a;--bg2:#11160e;--panel:#161d12;--panel2:#1d2618;--line:#2b3a23;
+  --text:#dfe8d4;--muted:#8aa07a;--accent:#9ed35a;--accent2:#e0b84a;--danger:#e76a5a;
+  --good:#7fd17a;--cold:#6fb0e0;--warn:#e0b84a;--shadow:0 8px 30px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;height:100%;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
+  position:fixed;inset:0;overflow:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased;}
+.screen{position:fixed;inset:0;display:none;flex-direction:column;}
+.screen.active{display:flex;}
+button{font-family:inherit;cursor:pointer;}
+.btn{appearance:none;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:13px 16px;border-radius:12px;font-size:15px;font-weight:600;width:100%;transition:transform .07s;}
+.btn:active{transform:scale(.97);}
+.btn.primary{background:linear-gradient(180deg,#3c6a1e,#2a4d14);border-color:var(--accent);color:#eaffcf;}
+.btn.sm{padding:8px 10px;font-size:13px;width:auto;border-radius:9px;}
+.muted{color:var(--muted);}
+.tag{display:inline-block;font-size:11px;padding:2px 7px;border-radius:20px;border:1px solid var(--line);color:var(--muted);}
+
+/* ---- setup ---- */
+#setup{padding:env(safe-area-inset-top) 16px 16px;overflow-y:auto;}
+.brand{text-align:center;margin:26px 0 6px;}
+.brand h1{font-size:30px;letter-spacing:.06em;margin:0;background:linear-gradient(180deg,#eaffcf,var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.brand p{color:var(--muted);margin:6px 0 0;font-size:13px;}
+.section-h{font-size:12px;letter-spacing:.18em;color:var(--accent);text-transform:uppercase;margin:22px 0 10px;}
+.loc-card{border:1px solid var(--line);border-radius:14px;padding:13px 15px;margin-bottom:10px;background:var(--panel);}
+.loc-card.sel{border-color:var(--accent);background:#1b2614;box-shadow:0 0 14px rgba(158,211,90,.15);}
+.loc-card h3{margin:0 0 3px;font-size:16px;}
+.loc-card .d{font-size:12px;color:var(--accent2);}
+.loc-card p{margin:5px 0 0;font-size:12.5px;color:var(--muted);line-height:1.45;}
+.founder{border:1px solid var(--line);border-radius:13px;padding:12px 14px;margin-bottom:10px;background:var(--panel);}
+.founder .top{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.founder h4{margin:0;font-size:15px;}
+.founder .sk{font-size:11.5px;color:var(--accent2);margin-top:5px;letter-spacing:.02em;}
+.founder .tr{font-size:11.5px;color:var(--muted);margin-top:4px;}
+
+/* ---- game ---- */
+#statusbar{display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top) + 8px) 12px 8px;background:var(--bg2);border-bottom:1px solid var(--line);}
+.sb-time{font-size:13px;font-weight:700;}
+.sb-time small{display:block;color:var(--muted);font-weight:500;font-size:11px;}
+.ch-wrap{flex:1;}
+.ch-bar{height:8px;border-radius:5px;background:#0a0d07;border:1px solid var(--line);overflow:hidden;}
+.ch-bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--danger),var(--accent2),var(--accent));}
+.ch-label{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:3px;}
+#advance{flex:none;background:linear-gradient(180deg,#3c6a1e,#2a4d14);border:1px solid var(--accent);color:#eaffcf;border-radius:11px;padding:10px 13px;font-weight:700;font-size:13px;}
+#advance:active{transform:scale(.96);}
+#page{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 80px;}
+#tabbar{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--bg2);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:5;}
+.tab{flex:1;text-align:center;padding:11px 4px;font-size:11px;color:var(--muted);background:none;border:none;}
+.tab.active{color:var(--accent);}
+.tab .ic{display:block;font-size:18px;margin-bottom:2px;}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:13px 14px;margin-bottom:12px;}
+.card h3{margin:0 0 10px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);}
+.logline{font-size:14px;line-height:1.5;padding:7px 0;border-bottom:1px solid var(--line);}
+.logline:last-child{border:none;}
+.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.res{display:flex;justify-content:space-between;font-size:13.5px;padding:6px 9px;background:var(--panel2);border:1px solid var(--line);border-radius:9px;}
+.res b{font-variant-numeric:tabular-nums;}
+.res.low b{color:var(--danger);}
+.vit{margin:7px 0;}
+.vit .lab{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:2px;}
+.vit .bar{height:6px;border-radius:4px;background:#0a0d07;border:1px solid var(--line);overflow:hidden;}
+.vit .bar>i{display:block;height:100%;}
+.row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);}
+.row:last-child{border:none;}
+.row .nm{flex:1;}
+.row .nm b{font-size:14.5px;}
+.row .nm .s{font-size:11px;color:var(--muted);}
+.seg{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;}
+.seg button{background:var(--panel2);border:none;color:var(--muted);padding:7px 9px;font-size:11px;font-weight:600;}
+.seg button.on{background:var(--accent);color:#16210a;}
+.jobpick{background:var(--panel2);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:9px;font-size:12.5px;min-width:96px;text-align:left;}
+
+/* ---- sheet / modal ---- */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;z-index:20;}
+.overlay.active{display:flex;}
+.sheet{width:100%;max-width:560px;max-height:80vh;overflow-y:auto;background:var(--panel);border:1px solid var(--line);border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));box-shadow:var(--shadow);}
+.sheet h3{margin:0 0 12px;font-size:16px;}
+.opt{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;border:1px solid var(--line);border-radius:11px;margin-bottom:8px;background:var(--panel2);}
+.opt.disabled{opacity:.4;}
+.opt .oi{font-size:13px;}
+.opt .oi small{display:block;color:var(--muted);font-size:11.5px;margin-top:2px;}
+@media(min-width:600px){.overlay{align-items:center;}.sheet{border-radius:18px;}}
+</style>
+</head>
+<body>
+  <!-- SETUP -->
+  <section id="setup" class="screen active">
+    <div class="brand"><h1>HOLLOW FRONTIER</h1><p>Lead the last to a place worth keeping.</p></div>
+    <div class="section-h">Choose your refuge</div>
+    <div id="loc-list"></div>
+    <div class="section-h">Your founders <span class="muted" style="text-transform:none;letter-spacing:0">— tap ↻ to reroll</span></div>
+    <div id="founder-list"></div>
+    <button class="btn primary" id="begin" style="margin-top:8px">Begin the Founding</button>
+    <div style="height:20px"></div>
+  </section>
+
+  <!-- GAME -->
+  <section id="game" class="screen">
+    <div id="statusbar">
+      <div class="sb-time" id="sb-time">Day 1<small>Spring</small></div>
+      <div class="ch-wrap">
+        <div class="ch-label"><span>Colony Health</span><span id="ch-num">—</span></div>
+        <div class="ch-bar"><i id="ch-fill" style="width:0%"></i></div>
+      </div>
+      <button id="advance">Advance ▶<br><small id="adv-len" style="font-weight:500;font-size:10px"></small></button>
+    </div>
+    <div id="page"></div>
+    <div id="tabbar">
+      <button class="tab active" data-page="briefing"><span class="ic">📜</span>Briefing</button>
+      <button class="tab" data-page="colony"><span class="ic">🏚️</span>Colony</button>
+      <button class="tab" data-page="people"><span class="ic">👥</span>People</button>
+      <button class="tab" data-page="jobs"><span class="ic">🛠️</span>Jobs</button>
+    </div>
+  </section>
+
+  <div id="overlay" class="overlay"><div class="sheet" id="sheet"></div></div>
+
+  <script src="src/core.js"></script>
+  <script src="src/ui.js"></script>
+</body>
+</html>
