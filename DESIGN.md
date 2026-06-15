@@ -362,6 +362,26 @@ the gate), drawing from the location-biased event deck. **Emergent, not scripted
 — no authored peaks or valleys.** The storyteller is a swappable module so
 Phoebe (calm) / Randy (chaos) variants can drop in later.
 
+### 10.1 Event deck (locked — 35)
+Drawn weighted by location, season, and colony state. `[ ]` = location bias;
+**(choice)** = pauses for a decision, others resolve automatically.
+
+- **Weather/season:** Cold Snap [Rockies] · Mild Spell · Heatwave [Desert] ·
+  Drought [Desert] · Flood [Delta] · Monsoon [Jungle] · Coastal Storm [Oregon] ·
+  Bumper Harvest
+- **Disease/health:** Fever Outbreak [Jungle/Delta] **(choice)** · Plague ·
+  Tainted Water [Jungle/Delta] · Infected Wound
+- **Wildlife:** Predator Attack [Rockies/Jungle/Any] · Manhunter Pack ·
+  Pests/Locusts
+- **Human threats:** Raiders · Bandit Tribute **(choice)** · Sea-Raiders [Oregon]
+- **Arrivals:** Wandering Trader **(choice)** · Refugees at the Gate **(choice)** ·
+  Lone Wanderer **(choice)** · Rival Colony Contact **(choice)**
+- **Internal/social:** Colonist Dispute **(choice)** · Romance Blossoms ·
+  Theft from Stores **(choice)** · Despair · Leadership Challenge **(choice)**
+- **Discovery:** Ruins/Cache [Jungle/Scout] · Oasis Found [Desert] · Old Stockpile
+- **Infrastructure/population:** Fire! **(choice)** · Vermin in the Stores ·
+  Tool Breakage · Death of Old Age · A Colonist Wishes to Leave **(choice)**
+
 ---
 
 ## 11. Fail state & the chronicle
@@ -379,7 +399,7 @@ All flexible/data-driven; this is the starter content still to be specified:
 - **Project catalog** — ✓ locked, see §5.6.
 - **Decrees** — ✓ locked, see §3.5.
 - **Trait table** — ✓ locked, see §6.2 (42 traits).
-- **Event deck** — what randomly happens *to* you, biased by location. *(pending)*
+- **Event deck** — ✓ locked, see §10.1 (35 events).
 - **Background archetypes** — skill-biasing colonist origins. *(pending)*
 
 ---
