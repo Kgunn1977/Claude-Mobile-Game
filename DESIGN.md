@@ -77,6 +77,20 @@ opens up as you stabilize. Crises automatically pull you back to fine-grained
 control; calm fast-forwards. No scripted pacing — **the clock *is* the colony's
 state.** Colony Health is the master dial on the dashboard.
 
+**Turn length is a *maximum*, not a fixed beat.** A **(choice)** event or a sudden
+crisis interrupts the sim and opens the Briefing early — so a "1-year" turn is cut
+to days the moment raiders appear. Between interruptions, if nothing meaningful
+happens the sim **auto-advances and only halts when there's news or a decision**,
+so fine-grained turns never become empty clicking.
+
+**The 1-hour band is narrow and quickly escaped.** A fresh colony sits at the floor
+(no shelter, no stores) → hour-by-hour. But Colony Health climbs fast once
+immediate needs (water, a fire, food for the night) are met, so the founding
+scramble is only a handful of turns before time opens to days, then weeks. Health
+is **sensitive at the bottom** — a deliberate anti–doom-loop so a struggling colony
+can always claw back to longer turns by fixing root causes. The aggregate weights
+and band cutoffs are tuning dials.
+
 ---
 
 ## 3. Command & resolution
@@ -100,7 +114,7 @@ state.** Colony Health is the master dial on the dashboard.
 ```
 ROLL = d20 + Skill + TraitMods − ConditionPenalty   vs   DC
    DC:  easy 10 · medium 15 · hard 20 · brutal 25
-   ConditionPenalty = −2 for each vital under 30 (stacking)
+   ConditionPenalty = −2 for each vital under 30 (stacking, capped at −6)
 ```
 
 | Result | Condition | Output × | Narrative effect |
@@ -146,13 +160,27 @@ toggle on/off; *actions* fire once.
 - **Trade & enforcement:** Trade Policy *(policy)* · Seize Hoards *(action)*
 - **Health:** Quarantine *(policy)* · Tonic Distribution *(action)*
 
+### 3.6 Combat resolution (raids & predators)
+A threat arrives with a **Strength** (scaled by colony wealth + storyteller). The
+colony's **Defense** = Σ(assigned defenders' Combat rolls × effort) + **Weapons/
+Ammo** bonus (Ammo is consumed) + **Wall / Watchtower** bonuses. Compare by margin,
+using the same five degrees as §3.2:
+
+- **Decisive win** → repelled, no losses (maybe captives → Conquest, later)
+- **Win** → repelled, minor injuries
+- **Partial** → repelled, but casualties and some stores stolen
+- **Loss** → breach: injuries/deaths, significant theft or building damage
+- **Rout** → colonists killed or taken; a possible run-ending blow
+
+No defenders assigned = you rely on Walls alone. Combat is rare but consequential.
+
 ---
 
 ## 4. The five vitals (per colonist, 0–100)
 
 | Vital | Rises with | Falls with | At low (<30) |
 |---|---|---|---|
-| **Stamina** | rest / light weeks | working | poor output, error-prone (roll penalty) |
+| **Stamina** | rest / light effort | working | poor output, error-prone (roll penalty) |
 | **Hunger** *(100 = full)* | eating from Food stores | time passing | drains Health (starvation) |
 | **Warmth** | shelter, heat, warm season | cold, winter, exposure | drains Health, hurts Happiness |
 | **Health** | Heal tasks, medicine, rest | injury, sickness, cold, starvation | low Stamina recovery; **0 = death** |
@@ -163,6 +191,12 @@ unhappy colonists slack, refuse orders, sap others, and at the bottom break or
 leave. The vitals web together — neglect food → Hunger → Health → Stamina won't
 recover → work collapses → Happiness craters → breaks. One bad winter cascades.
 
+**Water** has no per-colonist thirst bar — instead, when the colony's Water runs
+dry, every colonist's **Health** drains (the same way Hunger causes starvation).
+
+**ConditionPenalty cap:** the −2-per-low-vital roll penalty (§3.2) is capped at
+**−6** so a neglected colonist is bad at their job, not mathematically hopeless.
+
 ---
 
 ## 5. Economy — Banished-based (locked)
@@ -172,8 +206,9 @@ economy), with **two deliberate additions** — *Water* and *Stamina* — and a
 **combat bolt-on** (Banished has no military; we do).
 
 ### 5.1 Resources
-- **Food** — four diet types: **Grain · Fruit · Vegetable · Protein**.
-  *Variety* (eating from several types) improves Health.
+- **Food** — four diet types: **Grain · Fruit · Vegetable · Protein**. "Days of
+  supply" = total Food ÷ daily consumption (drives Hunger); **variety** (how many
+  types are stocked) is tracked separately and feeds **Health**.
 - **Raw:** **Logs · Stone · Iron · Coal · Herbs · Leather · Wool**
 - **Refined:** **Firewood · Tools · Coats · Ale**
 - **Our additions:** **Water** (resource + survival need; shortage damages Health
@@ -199,7 +234,7 @@ Water ← wells/gather · Stamina ← work/rest (§3.4)`
 - **Food:** Gatherer · Hunter · Fisher · Crop Field · Orchard · Pasture
 - **Materials:** Forester · Woodcutter · Quarry · Mine · Herbalist
 - **Refining:** Blacksmith · Tailor · Brewery
-- **Storage:** Stockpile (bulky raw) · Barn (food & goods) · Market (distribution)
+- **Storage:** Stockpile (bulky raw) · Barn (food & goods)
 - **Living / Service:** Houses (burn Firewood for Warmth) · Tavern · Chapel ·
   School · Hospital · Trading Post
 - **Our additions:** Weaponsmith · Watchtower · Wall · Well (drinking Water)
@@ -213,9 +248,10 @@ its mechanics literally for v1; a post-collapse **reskin** (e.g. Scrap-salvage i
 place of mined Iron/Coal) is a later, cosmetic pass — not a v1 concern.
 
 ### 5.6 Project catalogue (locked — 27 buildings)
-All buildings are constructed as multi-week projects (Building skill; multiple
-workers, re-assigned weekly). Costs = work points (w) + materials; the operating
-skill / effect is noted. All numbers are tuning dials.
+All buildings are constructed as multi-turn projects (Building skill; multiple
+workers, re-assigned each Briefing). Costs = work units (w, accumulated from
+builders' per-day effort) + materials; the operating skill / effect is noted. All
+numbers are tuning dials.
 
 - **Food (Provision):** Gatherer's Hut 120w+20 Logs (Fruit/Veg) · Hunting Cabin
   140w+25 Logs (Protein+Leather) · Fishing Dock 150w+30 Logs *(needs water)*
@@ -252,10 +288,15 @@ Launch set (6): **Provision · Labor · Crafting · Building · Medicine · Comb
 - **Labor** — raw extraction: chop logs, quarry stone, mine iron/coal
 - **Crafting** — refining: Firewood, Tools, Coats, Ale, Weapons/Ammo
 - **Building** — constructing the projects/buildings
-- **Medicine** — tend sick, Apothecary, Hospital
+- **Medicine** — tend the sick at the Herbalist & Hospital (Herbs are the
+  consumable — there is **no separate Medicine resource**)
 - **Combat** — defense, raids
 
 (Scouting, Leadership, and a Farming/Foraging split are deferred to later builds.)
+
+**Learning by doing:** working a job slowly raises that skill — Townies fastest, and
+a School (later) accelerates everyone. So a colony organically gets better at what
+it repeatedly does.
 
 ### 6.2 Traits — 42 total, `incompatibleWith` enforced, 1–3 per colonist
 
@@ -283,16 +324,16 @@ no opposing trade-off pair on one colonist).
 | Provision × Crafting | Field Hand (+Prov/−Craft) | Benchwright (+Craft/−Prov) |
 | Provision × Building | Rover (+Prov/−Build) | Homesteader (+Build/−Prov) |
 | Provision × Medicine | Hunter's Heart (+Prov/−Med) | Nurturer (+Med/−Prov) |
-| Provision × Combat | Peaceful Provider (+Prov/−Cmb) | Scavenger (+Cmb/−Prov) |
+| Provision × Combat | Peaceful Provider (+Prov/−Cmb) | Marauder (+Cmb/−Prov) |
 | Labor × Crafting | Brute Force (+Lab/−Craft) | Fine Hands (+Craft/−Lab) |
 | Labor × Building | Hauler (+Lab/−Build) | Foreman (+Build/−Lab) |
 | Labor × Medicine | Hard Case (+Lab/−Med) | Soft-Spoken (+Med/−Lab) |
 | Labor × Combat | Workhorse (+Lab/−Cmb) | Brawler (+Cmb/−Lab) |
 | Crafting × Building | Detailer (+Craft/−Build) | Framer (+Build/−Craft) |
-| Crafting × Medicine | Maker (+Craft/−Med) | Apothecary (+Med/−Craft) |
+| Crafting × Medicine | Maker (+Craft/−Med) | Folk Healer (+Med/−Craft) |
 | Crafting × Combat | Pacifist (+Craft/−Cmb) | Gunsmith (+Cmb/−Craft) |
 | Building × Medicine | Mason (+Build/−Med) | Mender (+Med/−Build) |
-| Building × Combat | Engineer (+Build/−Cmb) | Bruiser (+Cmb/−Build) |
+| Building × Combat | Architect (+Build/−Cmb) | Bruiser (+Cmb/−Build) |
 | Medicine × Combat | Medic (+Med/−Cmb) | Butcher (+Cmb/−Med) |
 
 **Temperament traits** (e.g. *Hardy* +stamina, *Volatile* breaks easier,
@@ -302,10 +343,12 @@ mental-break behavior.
 
 ### 6.3 Generation & background archetypes
 A single generator produces every colonist: **name → age → background archetype
-→ 1–3 traits → vitals**. Base skills roll low/random; the archetype adds **+3 to
-a primary skill, +1–2 to a secondary**, and tilts trait odds (Soldier → *Fierce*;
-Doctor → *Healer's Hands*). Population source (§7) varies only the starting
-condition/flavor.
+→ 1–3 traits → vitals**. Base skills roll low/random; the archetype applies a bias
+and tilts trait odds (Soldier → *Fierce*; Doctor → *Healer's Hands*). Skills cap at
+10. Population source (§7) varies only the starting condition/flavor.
+
+Bias notation: **++** ≈ +3 to a primary skill · **+** ≈ +1–2 to a secondary ·
+**+++** = exceptional (~+5, e.g. the Doctor).
 
 **Archetypes (15, locked):**
 
@@ -325,7 +368,7 @@ condition/flavor.
 | Police / Guard | +Combat +Labor | holds the line and the rules |
 | Survivalist | +Provision +Combat | planned for this |
 | Scavenger / Drifter | +Labor +Combat | lives off the bones of the old world |
-| Townie | weak skills, **learns fastest** | soft hands, sharp mind |
+| Townie | no skill bias, but **learns any job fastest** | soft hands, sharp mind |
 
 ### 6.4 Relationships
 Opinion of each other colonist (−100…+100), crystallizing into ties: **friend,
@@ -334,7 +377,7 @@ rival, partner, family**. Deaths and breaks ripple through the web.
 ### 6.5 Mental breaks & resistance (off Happiness)
 ```
 Happiness <35  on edge (risk)
-          <20  minor break — lose their week / lash out / refuse an order
+          <20  minor break — stop working a while / lash out / refuse an order
           <10  major break — sabotage, fight, or flee        [trait-modified]
 ```
 
@@ -373,7 +416,9 @@ deck**, nudges **founder backgrounds**, and tunes **difficulty**. *Expandable.*
 1. **Choose a starting location** (§8).
 2. **Generate 6 founders.** Each founder slot can be **rerolled up to 5×** —
    you play a hand, but never a hopeless one.
-3. Begin at **Week 1, Monday Briefing.**
+3. **Start cache** (location-dependent): a few days of mixed Food, some Logs and
+   Tools, and a makeshift **Camp** giving minimal shelter/Warmth.
+4. Begin the **founding** — Day 1, the first Briefing, at 1-hour turns (§2.3).
 
 ---
 
@@ -420,8 +465,10 @@ All flexible/data-driven. Status:
 - **Trait table** — ✓ locked, see §6.2 (42 traits).
 - **Event deck** — ✓ locked, see §10.1 (35 events).
 - **Background archetypes** — ✓ locked, see §6.3 (15).
-- **Job/assignment catalog** — standing jobs = one per building (§5.6) plus Build,
-  Stand Watch, Scout, Tend Sick. *(fully derived from the above — no new content.)*
+- **Job/assignment catalog** — standing jobs = one per building (§5.6) plus four
+  non-building jobs with their resolving skill: **Build → Building · Stand Watch →
+  Combat · Tend Sick → Medicine · Scout → Provision** (Scout uses Provision until a
+  dedicated Scouting skill is added). *(fully derived from the above — no new content.)*
 
 **The design is fully spec'd and ready to build.**
 
