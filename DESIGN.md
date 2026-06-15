@@ -527,7 +527,53 @@ All flexible/data-driven. Status:
 engine/      loop, resolution, save
 data/        skills, traits, tasks, events, locations, names, archetypes
 ui/          briefing, colony, colonists, assignments pages
+sim/         headless harness, autopilot bots, metrics
+test/        content validator, invariants, balance baselines
 ```
+
+---
+
+## 14. Balance & validation
+Resource sims live or die on balance, so testing is a **first-class deliverable**,
+built alongside the engine — not bolted on. Balance lives in **data + tunable
+constants** (the bracketed dials and the §5.7 targets), so it is machine-checkable.
+
+### 14.1 Four layers of automated protection
+1. **Static flow analysis** — per-capita consumption vs. per-worker production for
+   each chain, solved analytically. Catches structurally impossible economies (a
+   chain that can never net-positive) before a single turn runs.
+2. **Content validator** — referential integrity over all data: every job → a real
+   skill; recipe inputs/outputs → declared resources; building → operating skill;
+   trait sums (±3 single / +2−2 trade-off); symmetric `incompatibleWith`;
+   archetype / event / decree / location refs all resolve; and **no resource
+   created from nothing**. Runs on every build.
+3. **Headless simulation harness** — runs the full sim with no UI, driven by
+   **autopilot bots** (greedy / balanced / naive) across a **seeded Monte-Carlo
+   sweep** (every location × difficulty × hundreds of runs). Reports: survival
+   rate, median time-to-collapse, cause-of-death mix, resource trajectories,
+   Colony-Health & turn-length distributions, equilibrium worker ratios, crit/event
+   rates, and a **difficulty-ordering check** (Desert harder than Oregon, etc.).
+   Rule of thumb: a competent bot should survive Normal; a naive bot should not.
+4. **Balance-regression baselines** — snapshot the harness metrics; every change
+   re-runs and **diffs** them, so balance shifts are visible and reviewable, like
+   code ("this dropped Desert survival 55% → 12%").
+
+### 14.2 Invariants (asserted every run)
+Resources never negative · refinement conserves mass · Colony Health ∈ [0,100] ·
+no NaN/Infinity in any stat · turn-length mapping is total · save → load
+round-trips to identical state.
+
+### 14.3 Determinism
+Seedable RNG — every run is reproducible, so a weird run found on a phone can be
+replayed exactly and debugged.
+
+### 14.4 Workflow for adding anything
+`define the target → add as data → validator passes → harness re-runs → diff vs.
+baseline → tune dials if a §5.7 target breaks → then human playtest for feel.`
+Bots verify *correctness & in-range balance*; only a human judges *fun* (pacing,
+drama). Build **inside-out**: engine + harness on a tiny vertical slice first,
+balance the core loop, then pour in content — each addition re-checked against the
+baseline.
 
 ---
 
