@@ -38,35 +38,63 @@ resolution with degrees of success).
 
 ## 2. The core loop
 
-A **turn = one week**, opening on the **Monday Briefing**.
+Turns are **variable length, set by Colony Health** (§2.3): a struggling colony
+is managed hour-by-hour; a thriving one coasts a year at a time. Each turn the
+sim advances by the current tier's duration, runs your **standing assignments**
+(§3.1), resolves events, then opens the **Briefing**.
 
-### 2.1 The Monday Briefing (four beats, one per line)
-1. **The Week That Was** — every outcome from last week, *one event per line*.
-2. **State of the Colony** — tangible numbers (see §4). Food & Water shown as
-   **days of supply**.
+### 2.1 The Briefing (four beats, one per line)
+1. **What happened** — every outcome over the elapsed span (1 hour … 1 year),
+   *one event per line*.
+2. **State of the Colony** — tangible numbers (see §4) + **Colony Health**.
+   Food / Water / Firewood shown as **days of supply**.
 3. **On Your Desk** — petitions and requests from colonists.
-4. **Issue This Week's Orders** — go to Assignments.
+4. **Issue orders** — adjust standing assignments / decrees, then **Advance**.
 
-Then you assign work, **Advance**, the week simulates with the dice, and next
-Monday's briefing *is* the story.
+Then the next span simulates with the dice, and the next briefing *is* the story.
 
 ### 2.2 Pages (swipe left → right)
 `Briefing → Colony Stats → Colonist Stats → Assignments`
 *(planned later: Chronicle (full story log), Events.)*
 
+### 2.3 Time — variable turn length (driven by Colony Health)
+**Colony Health (0–100)** is a meta-stat (distinct from a colonist's Health
+vital) that aggregates: average colonist vitals (Hunger/Warmth/Health/Happiness),
+resource cushion (days of Food/Water/Firewood), population trend, and pending
+threat. It sets how much time each turn covers:
+
+| Colony Health | Turn length |
+|---|---|
+| ~0 (founding / collapse) | **1 hour** |
+| low | **1 day** |
+| mid-low | **1 week** |
+| mid-high | **1 month** |
+| high | **1 season (≈3 months)** |
+| ~100 (flourishing) | **1 year** |
+
+The game opens at worst health → **1-hour turns** (a desperate founding), and time
+opens up as you stabilize. Crises automatically pull you back to fine-grained
+control; calm fast-forwards. No scripted pacing — **the clock *is* the colony's
+state.** Colony Health is the master dial on the dashboard.
+
 ---
 
 ## 3. Command & resolution
 
-### 3.1 Work points
-- Each colonist's **work points available this week = current Stamina (0–100).**
-- **Tasks** cost work points; you **scale the investment to scale the output**
-  (Forage for 20 vs. Forage for 80 → very different yields).
-- A colonist can split points across multiple task types in a week.
-- **Decrees** cost no labor — they cost **standing** (paid in Happiness). This is
-  where resistance is born (rationing, curfews, exile, taking in strangers).
-- **Projects** have a `TotalWork`; multiple colonists contribute over multiple
-  weeks; **workers are re-assigned every Monday**. Completion unlocks a benefit.
+### 3.1 Standing assignments (the work model)
+- You assign each colonist to a **job** (operate a building, build a project,
+  stand watch, scout…) as a **persistent order** with an **effort level**.
+  Assignments carry over between turns; you re-tune them at each briefing.
+- The sim runs assignments for the turn's duration at **per-day rates**, so the
+  same orders yield a little over a 1-hour turn and a lot over a 1-year turn.
+- **Effort vs. Stamina:** effort above a colonist's sustainable line drains
+  Stamina over the turn (§3.4); light effort restores it. Sustainable orders hold
+  steady over long turns; unsustainable ones degrade — and the resulting shortfall
+  is often what drops Colony Health and shortens the *next* turn.
+- **Decrees** cost no labor — they cost **standing** (paid in Happiness):
+  rationing, curfews, exile, taking in strangers, etc.
+- **Projects** have a `TotalWork`; assigned builders contribute per-day until it
+  completes and unlocks its benefit.
 
 ### 3.2 The roll (D&D-style, with degrees of success)
 ```
@@ -85,20 +113,38 @@ ROLL = d20 + Skill + TraitMods − ConditionPenalty   vs   DC
 
 ### 3.3 Output
 ```
-OUTPUT      = PointsInvested × YieldPerPoint[task] × SkillFactor × RollMultiplier
+OUTPUT/day  = Effort × YieldPerDay[job] × SkillFactor × RollMultiplier
+TOTAL       = OUTPUT/day × days in the turn
 SkillFactor = 0.7 + Skill×0.06     (skill 0 → 0.7, 5 → 1.0, 10 → 1.3)
 ```
+Over long turns the sim **samples multiple rolls** across the elapsed time, so a
+year is never decided by one lucky or unlucky die.
 *All bracketed constants are tuning dials, calibrated in playtest.*
 
-### 3.4 Stamina, work & recovery (replaces a separate "fatigue" stat)
+### 3.4 Stamina, effort & recovery (replaces a separate "fatigue" stat)
+Stamina (0–100) is a colonist's energy reservoir, updated **per day** of the turn:
 ```
-Points available     = current Stamina (0–100)
-Stamina_next         = clamp( Stamina − PointsUsed + Recovery , 0, 100 )
-Recovery             = [60] × Wellbeing      (hungry/cold/sick/sad → far less)
-Sustainable workload ≈ Recovery (~60/wk)
+daily ΔStamina = Recovery − Effort
+   Recovery = [base] × Wellbeing   (hungry/cold/sick/sad → far less)
+   sustainable when Effort ≈ Recovery
 ```
-Push someone to 100 and they crash to ~60 next week → fewer points → overwork
-punishes itself. Unspent capacity **is** rest; no Rest button needed.
+Sustained over-effort drains Stamina → lower output and higher mishap chance;
+light effort restores it. Over a long, healthy turn, sustainable assignments hold
+steady; push too hard and the colony frays, Colony Health drops, and turns
+shorten. Light effort **is** rest; no Rest button needed.
+
+### 3.5 Decrees (locked — 18)
+Leadership calls that cost no labor, only **standing (Happiness)**. *Policies*
+toggle on/off; *actions* fire once.
+- **Rationing (policies):** Ration Food · Ration Firewood · Ration Water ·
+  Austerity (hold Ale)
+- **Labor:** Mandatory Overtime *(policy)* · Day of Rest *(action)* ·
+  Prioritize Construction *(policy)* · Prioritize Defense *(policy)*
+- **Reserves & morale:** Strategic Reserve *(policy)* · Feast *(action)*
+- **Population & social:** Curfew *(policy)* · Conscription *(policy)* ·
+  Exile *(action, targeted)* · Open the Gates *(policy)*
+- **Trade & enforcement:** Trade Policy *(policy)* · Seize Hoards *(action)*
+- **Health:** Quarantine *(policy)* · Tonic Distribution *(action)*
 
 ---
 
@@ -327,15 +373,14 @@ who lived and died, the defining events. Every run is a story you can retell.
 
 ## 12. Content to seed for the first playable build
 All flexible/data-driven; this is the starter content still to be specified:
-- **Task catalog** — the weekly orders that run the Banished buildings (Gather,
-  Hunt, Fish, Farm, Chop, Quarry, Mine, gather Herbs; refine at Woodcutter /
-  Blacksmith / Tailor / Brewery / Weaponsmith; Tend Sick, Stand Watch, Scout).
+- **Job/assignment catalog** — the standing jobs colonists can hold: one per
+  building (§5.6) plus Build, Stand Watch, Scout, Tend Sick. *(mostly derived
+  from buildings; finalize the non-building jobs.)*
 - **Project catalog** — ✓ locked, see §5.6.
-- **Decrees** — leadership calls that cost standing (Ration, Curfew, Exile,
-  Take in strangers…).
-- **Event deck** — what randomly happens *to* you, biased by location.
-- **Trait names & effect values** — the full 30-trait table.
-- **Background archetypes** — skill-biasing colonist origins.
+- **Decrees** — ✓ locked, see §3.5.
+- **Trait table** — ✓ locked, see §6.2 (42 traits).
+- **Event deck** — what randomly happens *to* you, biased by location. *(pending)*
+- **Background archetypes** — skill-biasing colonist origins. *(pending)*
 
 ---
 
