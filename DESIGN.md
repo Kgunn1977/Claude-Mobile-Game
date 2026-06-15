@@ -30,8 +30,9 @@ here is the seed, not the ceiling.
 5. **Text-forward, dashboard-driven, mobile-first.** Stats and calculators under
    the hood; clean readable surface on a phone. Runs offline, no build step.
 
-**Reference points:** RimWorld (emergent sim + AI storyteller), Dungeons &
-Dragons (d20 resolution with degrees of success).
+**Reference points:** RimWorld (emergent sim + AI storyteller), **Banished**
+(the resource economy — adopted as-is; see §5), Dungeons & Dragons (d20
+resolution with degrees of success).
 
 ---
 
@@ -118,13 +119,62 @@ recover → work collapses → Happiness craters → breaks. One bad winter casc
 
 ---
 
-## 5. Colonists
+## 5. Economy — Banished-based (locked)
 
-### 5.1 Skills (0–10) — *expandable list*
+We adopt the economy of **Banished** as-is (a proven, tightly-balanced colony
+economy), with **two deliberate additions** — *Water* and *Stamina* — and a
+**combat bolt-on** (Banished has no military; we do).
+
+### 5.1 Resources
+- **Food** — four diet types: **Grain · Fruit · Vegetable · Protein**.
+  *Variety* (eating from several types) improves Health.
+- **Raw:** **Logs · Stone · Iron · Coal · Herbs · Leather · Wool**
+- **Refined:** **Firewood · Tools · Coats · Ale**
+- **Our additions:** **Water** (resource + survival need; shortage damages Health
+  like starvation) and **Stamina** (per-colonist, §3.4)
+- **Combat add-on:** **Weapons · Ammo**
+- **Trade goods** — abstract, via the Trading Post
+
+### 5.2 Refinement chains (Banished's full set + our combat chain)
+1. Logs → **Firewood** (heat)
+2. Iron (+Coal) → **Tools** (work efficiency)
+3. Leather / Wool → **Coats** (warmth)
+4. Grain / Fruit → **Ale** (happiness)
+5. *(ours)* Iron + Coal → **Weapons / Ammo** (defense)
+
+Chains stay **shallow (≤2 steps)** — refinement matters but reads on a phone.
+
+### 5.3 How the economy feeds the vitals
+`Hunger ← Food (variety→Health) · Warmth ← Firewood (housing) + Coats ·
+Health ← Herbs/Hospital + diet variety · Happiness ← Ale/Tavern, Chapel, goods ·
+Water ← wells/gather · Stamina ← work/rest (§3.4)`
+
+### 5.4 Buildings (Banished set, abstracted — no map or hauling)
+- **Food:** Gatherer · Hunter · Fisher · Crop Field · Orchard · Pasture
+- **Materials:** Forester · Woodcutter · Quarry · Mine · Herbalist
+- **Refining:** Blacksmith · Tailor · Brewery
+- **Storage:** Stockpile (bulky raw) · Barn (food & goods) · Market (distribution)
+- **Living / Service:** Houses (burn Firewood for Warmth) · Tavern · Chapel ·
+  School · Hospital · Trading Post
+- **Our additions:** Weaponsmith · Watchtower · Wall · Well (drinking Water)
+
+Survival = **keeping Food, Firewood, and Tools in surplus**; shortfalls cascade
+(the Banished "death spiral").
+
+### 5.5 Note on theme
+Banished is medieval-pioneer in flavor (iron & coal mines, wool, ale). We keep
+its mechanics literally for v1; a post-collapse **reskin** (e.g. Scrap-salvage in
+place of mined Iron/Coal) is a later, cosmetic pass — not a v1 concern.
+
+---
+
+## 6. Colonists
+
+### 6.1 Skills (0–10) — *expandable list*
 Launch set: **Build · Forage · Heal · Fight · Scout.**
 (Craft, Farm, Lead, etc. added later.)
 
-### 5.2 Traits — 30 total, `incompatibleWith` enforced, 1–3 per colonist
+### 6.2 Traits — 30 total, `incompatibleWith` enforced, 1–3 per colonist
 - **10 single-skill traits** — one positive + one negative per skill:
   - Build: *Natural Builder* / *All Thumbs*
   - Forage: *Forager's Eye* / *City-Born*
@@ -138,16 +188,16 @@ Launch set: **Build · Forage · Heal · Fight · Scout.**
 Trait effects may touch: stamina, skill mods, per-task roll mods, mood
 tendencies, and mental-break behavior.
 
-### 5.3 Generation
+### 6.3 Generation
 A single generator produces every colonist: **name → age → background archetype
 (biases skills toward a legible identity, e.g. ex-soldier → Fight) → 1–3 traits →
 vitals**. Population source varies the starting condition/flavor only.
 
-### 5.4 Relationships
+### 6.4 Relationships
 Opinion of each other colonist (−100…+100), crystallizing into ties: **friend,
 rival, partner, family**. Deaths and breaks ripple through the web.
 
-### 5.5 Mental breaks & resistance (off Happiness)
+### 6.5 Mental breaks & resistance (off Happiness)
 ```
 Happiness <35  on edge (risk)
           <20  minor break — lose their week / lash out / refuse an order
@@ -156,11 +206,11 @@ Happiness <35  on edge (risk)
 
 ---
 
-## 6. Population sources
+## 7. Population sources
 
 | Source | When | Start condition | Flavor / risk |
 |---|---|---|---|
-| **Founders** | game start (6, see §8) | healthy, willing | the hand you're dealt |
+| **Founders** | game start (6, see §9) | healthy, willing | the hand you're dealt |
 | **Wanderers** | random event | neutral; traits partly hidden | gem or saboteur |
 | **Rescues** | scouting / events | grateful (high Happiness) | often arrive hurt or sick |
 | *Births* | *later build* | very high | child = years till useful, +1 mouth now |
@@ -170,7 +220,7 @@ Happiness <35  on edge (risk)
 
 ---
 
-## 7. Starting location (chosen at setup)
+## 8. Starting location (chosen at setup)
 
 One pick at game start sets **environmental modifiers**, **biases the event
 deck**, nudges **founder backgrounds**, and tunes **difficulty**. *Expandable.*
@@ -185,15 +235,15 @@ deck**, nudges **founder backgrounds**, and tunes **difficulty**. *Expandable.*
 
 ---
 
-## 8. Setup flow
-1. **Choose a starting location** (§7).
+## 9. Setup flow
+1. **Choose a starting location** (§8).
 2. **Generate 6 founders.** Each founder slot can be **rerolled up to 5×** —
    you play a hand, but never a hopeless one.
 3. Begin at **Week 1, Monday Briefing.**
 
 ---
 
-## 9. The Storyteller
+## 10. The Storyteller
 First build ships a **Cassandra-style** storyteller: a moderate event cadence
 that **scales gently with colony size/wealth** (more to lose → more knocking at
 the gate), drawing from the location-biased event deck. **Emergent, not scripted
@@ -202,17 +252,19 @@ Phoebe (calm) / Randy (chaos) variants can drop in later.
 
 ---
 
-## 10. Fail state & the chronicle
+## 11. Fail state & the chronicle
 The run ends when **all colonists are dead or have left**. The game then
 presents a **Chronicle** — a summary of the colony's life: how long it lasted,
 who lived and died, the defining events. Every run is a story you can retell.
 
 ---
 
-## 11. Content to seed for the first playable build
+## 12. Content to seed for the first playable build
 All flexible/data-driven; this is the starter content still to be specified:
-- **Task & project catalog** — the orders you can give (Forage, Build Shelter,
-  Tend Sick, Scout, Fortify, Gather Water, projects like Watchtower/Greenhouse…).
+- **Task catalog** — the weekly orders that run the Banished buildings (Gather,
+  Hunt, Fish, Farm, Chop, Quarry, Mine, gather Herbs; refine at Woodcutter /
+  Blacksmith / Tailor / Brewery / Weaponsmith; Tend Sick, Stand Watch, Scout).
+- **Project catalog** — the buildings to construct (§5.4) with `TotalWork` costs.
 - **Decrees** — leadership calls that cost standing (Ration, Curfew, Exile,
   Take in strangers…).
 - **Event deck** — what randomly happens *to* you, biased by location.
@@ -221,7 +273,7 @@ All flexible/data-driven; this is the starter content still to be specified:
 
 ---
 
-## 12. Technical shape
+## 13. Technical shape
 - **HTML / CSS / JS, mobile-first, offline, no build step.** Open a file, play.
 - **Data-driven content** (skills, traits, tasks, events, locations, names) kept
   in separate data modules, distinct from the engine, so content can grow without
@@ -237,5 +289,5 @@ ui/          briefing, colony, colonists, assignments pages
 
 ---
 
-*End of locked design v1. Next: §11 starter content, then build on the
+*End of locked design v1. Next: §12 starter content, then build on the
 designated branch.*
