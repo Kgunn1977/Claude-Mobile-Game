@@ -161,7 +161,7 @@
     groups.flat().forEach(res => {
       const v = S.store[res] || 0; if (v < 0.5 && !["water", "logs", "tools"].includes(res)) return;
       const cap = C.capFor(S, res); const full = v >= cap * 0.98;
-      grid.appendChild(resBox(cap2(res), `${Math.floor(v)}<span class="muted" style="font-weight:400">/${cap}${full ? " ⛔" : ""}</span>`, false));
+      grid.appendChild(resBox(resName(res), `${Math.floor(v)}<span class="muted" style="font-weight:400">/${cap}${full ? " ⛔" : ""}</span>`, false));
     });
     r.appendChild(grid);
     r.appendChild(el("div", "muted", "<span style='font-size:11px'>⛔ at cap — overflow is wasted; build a Stockpile/Barn for more.</span>"));
@@ -222,7 +222,7 @@
       const b = C.BUILDINGS[id]; const gate = (loc.buildings && loc.buildings[id] != null) ? loc.buildings[id] : 1;
       if (gate <= 0) return;
       const afford = Object.keys(b.build.mats).every(r => (S.store[r] || 0) >= b.build.mats[r]);
-      const mats = Object.entries(b.build.mats).map(([r, n]) => `${n} ${cap2(r)}`).join(", ") || "no materials";
+      const mats = Object.entries(b.build.mats).map(([r, n]) => `${n} ${resName(r)}`).join(", ") || "no materials";
       html += `<div class="opt ${afford ? "" : "disabled"}" data-id="${id}"><div class="oi">${b.name} <span class="muted" style="font-size:11px">— ${defOutputText(b)}</span><small>${b.build.work}w · ${mats}${b.skill ? " · " + cap2(b.skill) : ""}</small></div><button class="btn sm ${afford ? "primary" : ""}" ${afford ? "" : "disabled"}>Build</button></div>`;
     });
     openSheet(html);
@@ -257,7 +257,7 @@
   /* ---------------- jobs ---------------- */
   function viewJobs() {
     const f = document.createDocumentFragment();
-    const intro = el("div", "card"); intro.innerHTML = `<h3>Standing orders</h3><div class="muted" style="font-size:12.5px">Assign each colonist a job and how hard they push. Orders persist until you change them. <b>Rest</b> recovers stamina.</div>`;
+    const intro = el("div", "card"); intro.innerHTML = `<h3>Standing orders</h3><div class="muted" style="font-size:12.5px">Assign each colonist a job and how hard they push. Orders persist until you change them. <b>Rest</b> recovers stamina.<br><br>Buildings cost <b>Wood</b> &amp; <b>Stone</b> — make them with <b>Chop Wood</b> / <b>Gather Stone</b>, or build a <b>Forester</b> / <b>Quarry</b> for a steady supply.</div>`;
     f.appendChild(intro);
     const list = el("div", "card");
     live().forEach(c => {
@@ -294,8 +294,8 @@
   function jobName(id) { return (C.MANUAL_JOBS[id] && C.MANUAL_JOBS[id].name) || (C.BUILDINGS[id] && C.BUILDINGS[id].name) || id; }
   function defOutputText(def) {
     if (!def) return "";
-    if (def.produce) return "makes " + Object.keys(def.produce).map(cap2).join(", ");
-    if (def.recipe) return Object.keys(def.recipe.in).map(cap2).join("+") + " → " + Object.keys(def.recipe.out).map(cap2).join(", ");
+    if (def.produce) return "makes " + Object.keys(def.produce).map(resName).join(", ");
+    if (def.recipe) return Object.keys(def.recipe.in).map(resName).join("+") + " → " + Object.keys(def.recipe.out).map(resName).join(", ");
     if (def.isBuild) return "builds projects";
     if (def.heal) return "tends the sick";
     if (def.defense) return "defends (+" + def.defense + ")";
@@ -337,6 +337,9 @@
 
   const live = () => S.colonists.filter(c => c.alive);
   const cap2 = s => s[0].toUpperCase() + s.slice(1);
+  // friendlier resource names for players (internal ids stay the same)
+  const RES_NAME = { logs: "Wood", protein: "Meat", veg: "Veg" };
+  const resName = r => RES_NAME[r] || cap2(r);
 
   /* ---------------- boot ---------------- */
   window.addEventListener("DOMContentLoaded", () => {
