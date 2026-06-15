@@ -300,10 +300,32 @@ no opposing trade-off pair on one colonist).
 out of this matrix. Trait effects may also touch stamina, mood tendencies, and
 mental-break behavior.
 
-### 6.3 Generation
+### 6.3 Generation & background archetypes
 A single generator produces every colonist: **name → age → background archetype
-(biases skills toward a legible identity, e.g. ex-soldier → Fight) → 1–3 traits →
-vitals**. Population source varies the starting condition/flavor only.
+→ 1–3 traits → vitals**. Base skills roll low/random; the archetype adds **+3 to
+a primary skill, +1–2 to a secondary**, and tilts trait odds (Soldier → *Fierce*;
+Doctor → *Healer's Hands*). Population source (§7) varies only the starting
+condition/flavor.
+
+**Archetypes (15, locked):**
+
+| Archetype | Skill bias | Flavor |
+|---|---|---|
+| Farmer | ++Provision | worked the land before it fell apart |
+| Hunter-Trapper | +Provision +Combat | tracks and trigger discipline |
+| Laborer | ++Labor | strong back, few questions |
+| Miner | +Labor +Building | at home underground |
+| Mechanic | ++Crafting | fixes anything with parts and spite |
+| Smith / Machinist | +Crafting +Labor | shapes metal into what's needed |
+| Carpenter | ++Building | raises walls fast and square |
+| Engineer | +Building +Crafting | designs the thing, then builds it |
+| Nurse / Paramedic | ++Medicine | steady hands, hard stomach |
+| Doctor | +++Medicine | rare and precious |
+| Soldier / Veteran | ++Combat | trained for the worst |
+| Police / Guard | +Combat +Labor | holds the line and the rules |
+| Survivalist | +Provision +Combat | planned for this |
+| Scavenger / Drifter | +Labor +Combat | lives off the bones of the old world |
+| Townie | weak skills, **learns fastest** | soft hands, sharp mind |
 
 ### 6.4 Relationships
 Opinion of each other colonist (−100…+100), crystallizing into ties: **friend,
@@ -392,15 +414,16 @@ who lived and died, the defining events. Every run is a story you can retell.
 ---
 
 ## 12. Content to seed for the first playable build
-All flexible/data-driven; this is the starter content still to be specified:
-- **Job/assignment catalog** — the standing jobs colonists can hold: one per
-  building (§5.6) plus Build, Stand Watch, Scout, Tend Sick. *(mostly derived
-  from buildings; finalize the non-building jobs.)*
-- **Project catalog** — ✓ locked, see §5.6.
-- **Decrees** — ✓ locked, see §3.5.
+All flexible/data-driven. Status:
+- **Project catalog** — ✓ locked, see §5.6 (27 buildings).
+- **Decrees** — ✓ locked, see §3.5 (18).
 - **Trait table** — ✓ locked, see §6.2 (42 traits).
 - **Event deck** — ✓ locked, see §10.1 (35 events).
-- **Background archetypes** — skill-biasing colonist origins. *(pending)*
+- **Background archetypes** — ✓ locked, see §6.3 (15).
+- **Job/assignment catalog** — standing jobs = one per building (§5.6) plus Build,
+  Stand Watch, Scout, Tend Sick. *(fully derived from the above — no new content.)*
+
+**The design is fully spec'd and ready to build.**
 
 ---
 
@@ -420,5 +443,4 @@ ui/          briefing, colony, colonists, assignments pages
 
 ---
 
-*End of locked design v1. Next: §12 starter content, then build on the
-designated branch.*
+*End of locked design v1 — fully spec'd. Next: build on the designated branch.*
