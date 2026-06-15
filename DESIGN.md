@@ -166,6 +166,36 @@ Banished is medieval-pioneer in flavor (iron & coal mines, wool, ale). We keep
 its mechanics literally for v1; a post-collapse **reskin** (e.g. Scrap-salvage in
 place of mined Iron/Coal) is a later, cosmetic pass — not a v1 concern.
 
+### 5.6 Project catalogue (locked — 27 buildings)
+All buildings are constructed as multi-week projects (Building skill; multiple
+workers, re-assigned weekly). Costs = work points (w) + materials; the operating
+skill / effect is noted. All numbers are tuning dials.
+
+- **Food (Provision):** Gatherer's Hut 120w+20 Logs (Fruit/Veg) · Hunting Cabin
+  140w+25 Logs (Protein+Leather) · Fishing Dock 150w+30 Logs *(needs water)*
+  (Protein) · Crop Field 100w+10 Logs (Grain/Veg, seasonal) · Orchard
+  120w+15 Logs *(matures slowly)* (Fruit) · Pasture 160w+30 Logs+livestock
+  (Protein+Leather/Wool)
+- **Extraction (Labor):** Forester 120w+20 Logs (Logs) · Quarry 200w+30 Logs
+  (Stone) · Mine 250w+40 Logs+20 Stone (Iron+Coal) · Herbalist Hut 100w+15 Logs
+  (Herbs)
+- **Refining (Crafting):** Woodcutter 100w+20 Logs (Logs→Firewood) · Blacksmith
+  220w+30 Logs+40 Stone (Iron+Coal→Tools) · Tailor 140w+25 Logs
+  (Leather/Wool→Coats) · Brewery 160w+30 Logs+20 Stone (Grain/Fruit→Ale) ·
+  Weaponsmith 240w+30 Logs+50 Stone (Iron+Coal→Weapons/Ammo)
+- **Storage:** Stockpile 40w (caps raw goods) · Barn 120w+30 Logs (caps
+  food/goods, slows spoilage)
+- **Living/Service:** Wood House 120w+20 Logs (+pop cap, burns more Firewood) ·
+  Stone House 160w+40 Stone (+pop cap, ~½ Firewood) · Tavern 200w+40 Logs+20 Stone
+  (Happiness, consumes Ale) · Chapel 250w+60 Stone (Happiness) · School
+  200w+40 Logs (faster skill growth, *later*) · Hospital 220w+40 Logs+30 Stone
+  (treats disease, boosts Medicine) · Trading Post 180w+40 Logs (trade)
+- **Combat + Water (ours):** Well 80w+30 Stone (Water) · Watchtower
+  160w+30 Logs+20 Stone (lowers raid success, early warning) · Wall 300w+80 Stone
+  (major defense)
+
+The **Wood vs Stone House** Firewood trade-off (Banished's signature) is in.
+
 ---
 
 ## 6. Colonists
@@ -300,7 +330,7 @@ All flexible/data-driven; this is the starter content still to be specified:
 - **Task catalog** — the weekly orders that run the Banished buildings (Gather,
   Hunt, Fish, Farm, Chop, Quarry, Mine, gather Herbs; refine at Woodcutter /
   Blacksmith / Tailor / Brewery / Weaponsmith; Tend Sick, Stand Watch, Scout).
-- **Project catalog** — the buildings to construct (§5.4) with `TotalWork` costs.
+- **Project catalog** — ✓ locked, see §5.6.
 - **Decrees** — leadership calls that cost standing (Ration, Curfew, Exile,
   Take in strangers…).
 - **Event deck** — what randomly happens *to* you, biased by location.
