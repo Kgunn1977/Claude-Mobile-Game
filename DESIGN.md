@@ -80,8 +80,9 @@ state.** Colony Health is the master dial on the dashboard.
 **Turn length is a *maximum*, not a fixed beat.** A **(choice)** event or a sudden
 crisis interrupts the sim and opens the Briefing early — so a "1-year" turn is cut
 to days the moment raiders appear. Between interruptions, if nothing meaningful
-happens the sim **auto-advances and only halts when there's news or a decision**,
-so fine-grained turns never become empty clicking.
+happens the sim **auto-advances and only halts on a decision, an event, or a
+threshold crossing** (a resource hits zero, a project finishes, a colonist
+collapses or dies), so fine-grained turns never become empty clicking.
 
 **The 1-hour band is narrow and quickly escaped.** A fresh colony sits at the floor
 (no shelter, no stores) → hour-by-hour. But Colony Health climbs fast once
@@ -125,11 +126,23 @@ ROLL = d20 + Skill + TraitMods − ConditionPenalty   vs   DC
 | **Failure** | 5+ under DC | **0.2×** | mostly wasted effort |
 | **Critical Failure** | natural 1, or 10+ under | **0×** | accident / new problem |
 
+**When the dice roll.** Contested or hazardous actions roll: combat, hard builds,
+risky jobs, acting while impaired, and event checks. **Routine, well-staffed
+production does *not* roll every day** — it yields its expected output (≈ Success
+tier). This keeps skilled specialists reliable, avoids a low-DC crit lottery (a
+skill-10 worker vs. an easy DC would otherwise crit constantly), and stops long
+turns from spamming crit/fumble events. A skill/condition mismatch pushes a job
+back onto the dice.
+
+**Effective Skill = Base + TraitMods** (≥0), used in *both* the roll and
+SkillFactor — so a +3 trait improves success *and* output. The roll bonus is
+uncapped; SkillFactor's skill input caps at 10.
+
 ### 3.3 Output
 ```
 OUTPUT/day  = Effort × YieldPerDay[job] × SkillFactor × RollMultiplier
 TOTAL       = OUTPUT/day × days in the turn
-SkillFactor = 0.7 + Skill×0.06     (skill 0 → 0.7, 5 → 1.0, 10 → 1.3)
+SkillFactor = 0.7 + Skill×0.06     (Skill = effective, capped 10: 0→0.7, 5→1.0, 10→1.3)
 ```
 Over long turns the sim **samples multiple rolls** across the elapsed time, so a
 year is never decided by one lucky or unlucky die.
@@ -147,6 +160,11 @@ light effort restores it. Over a long, healthy turn, sustainable assignments hol
 steady; push too hard and the colony frays, Colony Health drops, and turns
 shorten. Light effort **is** rest; no Rest button needed.
 
+**Effort** is the Stamina/day a colonist spends on jobs (0–100). Default effort
+auto-sets to the **sustainable** line (≈ Recovery); you can push higher for bursts.
+If Stamina/Health or a key resource crosses a critical threshold mid-turn, the turn
+**interrupts** (§2.3) — burnout and shortfalls are never invisible inside a long turn.
+
 ### 3.5 Decrees (locked — 18)
 Leadership calls that cost no labor, only **standing (Happiness)**. *Policies*
 toggle on/off; *actions* fire once.
@@ -161,10 +179,10 @@ toggle on/off; *actions* fire once.
 - **Health:** Quarantine *(policy)* · Tonic Distribution *(action)*
 
 ### 3.6 Combat resolution (raids & predators)
-A threat arrives with a **Strength** (scaled by colony wealth + storyteller). The
-colony's **Defense** = Σ(assigned defenders' Combat rolls × effort) + **Weapons/
-Ammo** bonus (Ammo is consumed) + **Wall / Watchtower** bonuses. Compare by margin,
-using the same five degrees as §3.2:
+A threat arrives with a **Strength** (scaled by colony wealth + storyteller), which
+acts as the **DC**. The colony's **Defense total** = Σ defenders' Combat checks +
+**Weapons/Ammo** bonus (Ammo consumed) + **Wall / Watchtower** bonuses. The margin
+(Defense − Strength) reads on the same five degrees as §3.2:
 
 - **Decisive win** → repelled, no losses (maybe captives → Conquest, later)
 - **Win** → repelled, minor injuries
@@ -183,7 +201,7 @@ No defenders assigned = you rely on Walls alone. Combat is rare but consequentia
 | **Stamina** | rest / light effort | working | poor output, error-prone (roll penalty) |
 | **Hunger** *(100 = full)* | eating from Food stores | time passing | drains Health (starvation) |
 | **Warmth** | shelter, heat, warm season | cold, winter, exposure | drains Health, hurts Happiness |
-| **Health** | Heal tasks, medicine, rest | injury, sickness, cold, starvation | low Stamina recovery; **0 = death** |
+| **Health** | tending (Medicine) + Herbs, rest | injury, sickness, cold, starvation, no water | low Stamina recovery; **0 = death** |
 | **Happiness** | fed/warm/healthy, good events, friends | neglect, grief, hated decrees | **mental breaks**; **resistance** |
 
 There is **no Loyalty stat**. Resistance to leadership runs off **Happiness**:
@@ -224,6 +242,10 @@ economy), with **two deliberate additions** — *Water* and *Stamina* — and a
 5. *(ours)* Iron + Coal → **Weapons / Ammo** (defense)
 
 Chains stay **shallow (≤2 steps)** — refinement matters but reads on a phone.
+
+**Tools & Coats wear out.** Working colonists slowly consume Tools (no Tools → an
+output penalty, e.g. ×0.7); Coats are worn down by cold and slow Warmth loss while
+held. Keeping both stocked is core to the surplus game (the Banished lesson).
 
 ### 5.3 How the economy feeds the vitals
 `Hunger ← Food (variety→Health) · Warmth ← Firewood (housing) + Coats ·
@@ -277,6 +299,20 @@ numbers are tuning dials.
   (major defense)
 
 The **Wood vs Stone House** Firewood trade-off (Banished's signature) is in.
+
+### 5.7 Calibration targets (intent for the tuning dials)
+The bracketed constants get tuned in playtest, but toward these targets:
+- One full-time food worker nets enough to feed **~3–4 colonists** (so ~2 of 6
+  founders on food early).
+- A **Forester + Woodcutter** pair heats the colony through a normal winter;
+  harsh biomes (Rockies) need more.
+- **Sustainable effort** (≈ Recovery) holds a job indefinitely; **max effort**
+  burns a colonist out in a few days.
+- **Tools** last ~a season of work per unit; **Coats** ~a winter.
+- The **start cache** lasts only the first few in-game days — enough to escape the
+  1-hour band, not enough to coast.
+- **Raids:** an undefended colony loses a baseline raid; a **Wall + ~2 armed
+  defenders** repels it.
 
 ---
 
@@ -380,6 +416,9 @@ Happiness <35  on edge (risk)
           <20  minor break — stop working a while / lash out / refuse an order
           <10  major break — sabotage, fight, or flee        [trait-modified]
 ```
+**Resistance is bounded.** A malcontent dents *nearby* colonists' Happiness, but
+sapping can't single-handedly collapse the colony — it's a slow drag you can
+counter (Feast, Tavern, addressing grievances), not an instant cascade.
 
 ---
 
@@ -400,7 +439,9 @@ Happiness <35  on edge (risk)
 ## 8. Starting location (chosen at setup)
 
 One pick at game start sets **environmental modifiers**, **biases the event
-deck**, nudges **founder backgrounds**, and tunes **difficulty**. *Expandable.*
+deck**, nudges **founder backgrounds**, and tunes **difficulty**. It also **gates
+or modifies buildings** via yield multipliers — e.g. no Fishing Dock inland, a weak
+Forester in the Desert, Mine only where there's ore. *Expandable.*
 
 | Location | Climate / Warmth | Water | Food | Materials | Disease | Concealment → raids | Signature events | Difficulty |
 |---|---|---|---|---|---|---|---|---|
@@ -417,7 +458,7 @@ deck**, nudges **founder backgrounds**, and tunes **difficulty**. *Expandable.*
 2. **Generate 6 founders.** Each founder slot can be **rerolled up to 5×** —
    you play a hand, but never a hopeless one.
 3. **Start cache** (location-dependent): a few days of mixed Food, some Logs and
-   Tools, and a makeshift **Camp** giving minimal shelter/Warmth.
+   Tools, and a makeshift **Camp** giving minimal shelter/Warmth and a little storage.
 4. Begin the **founding** — Day 1, the first Briefing, at 1-hour turns (§2.3).
 
 ---
