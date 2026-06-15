@@ -171,22 +171,58 @@ place of mined Iron/Coal) is a later, cosmetic pass — not a v1 concern.
 ## 6. Colonists
 
 ### 6.1 Skills (0–10) — *expandable list*
-Launch set: **Build · Forage · Heal · Fight · Scout.**
-(Craft, Farm, Lead, etc. added later.)
+Launch set (6): **Provision · Labor · Crafting · Building · Medicine · Combat.**
+- **Provision** — all food: crops, orchards, pastures, gathering, hunting, fishing, herbs
+- **Labor** — raw extraction: chop logs, quarry stone, mine iron/coal
+- **Crafting** — refining: Firewood, Tools, Coats, Ale, Weapons/Ammo
+- **Building** — constructing the projects/buildings
+- **Medicine** — tend sick, Apothecary, Hospital
+- **Combat** — defense, raids
 
-### 6.2 Traits — 30 total, `incompatibleWith` enforced, 1–3 per colonist
-- **10 single-skill traits** — one positive + one negative per skill:
-  - Build: *Natural Builder* / *All Thumbs*
-  - Forage: *Forager's Eye* / *City-Born*
-  - Heal: *Healer's Hands* / *Squeamish*
-  - Fight: *Fierce* / *Timid*
-  - Scout: *Pathfinder* / *Homebody*
-- **20 trade-off traits** — both directions for each of the 10 skill pairs
-  (raises one skill, lowers another). E.g. *Pacifist* (Build↑/Fight↓) and its
-  mirror *Warmonger* (Fight↑/Build↓); *Wildling* (Forage↑/Build↓), etc.
+(Scouting, Leadership, and a Farming/Foraging split are deferred to later builds.)
 
-Trait effects may touch: stamina, skill mods, per-task roll mods, mood
-tendencies, and mental-break behavior.
+### 6.2 Traits — 42 total, `incompatibleWith` enforced, 1–3 per colonist
+
+Generated from the 6 skills: **N×(N+1) = 42** = 12 single-skill + 30 trade-off.
+Magnitudes: single **±3**, trade-off **+2 / −2**. Compatible mods stack (capped);
+`incompatibleWith` blocks contradictions (no positive+negative on the same skill,
+no opposing trade-off pair on one colonist).
+
+**Single-skill (12, ±3):**
+
+| Skill | Positive (+3) | Negative (−3) |
+|---|---|---|
+| Provision | Forager's Eye | Town-Bred |
+| Labor | Ox | Soft Hands |
+| Crafting | Artisan | Ham-Fisted |
+| Building | Master Builder | All Thumbs |
+| Medicine | Healer's Hands | Squeamish |
+| Combat | Fierce | Timid |
+
+**Trade-off (30, +2 / −2)** — both directions for each of the 15 skill pairs:
+
+| Pair | Trait A | Trait B |
+|---|---|---|
+| Provision × Labor | Woodsman (+Prov/−Lab) | Drudge (+Lab/−Prov) |
+| Provision × Crafting | Field Hand (+Prov/−Craft) | Benchwright (+Craft/−Prov) |
+| Provision × Building | Rover (+Prov/−Build) | Homesteader (+Build/−Prov) |
+| Provision × Medicine | Hunter's Heart (+Prov/−Med) | Nurturer (+Med/−Prov) |
+| Provision × Combat | Peaceful Provider (+Prov/−Cmb) | Scavenger (+Cmb/−Prov) |
+| Labor × Crafting | Brute Force (+Lab/−Craft) | Fine Hands (+Craft/−Lab) |
+| Labor × Building | Hauler (+Lab/−Build) | Foreman (+Build/−Lab) |
+| Labor × Medicine | Hard Case (+Lab/−Med) | Soft-Spoken (+Med/−Lab) |
+| Labor × Combat | Workhorse (+Lab/−Cmb) | Brawler (+Cmb/−Lab) |
+| Crafting × Building | Detailer (+Craft/−Build) | Framer (+Build/−Craft) |
+| Crafting × Medicine | Maker (+Craft/−Med) | Apothecary (+Med/−Craft) |
+| Crafting × Combat | Pacifist (+Craft/−Cmb) | Gunsmith (+Cmb/−Craft) |
+| Building × Medicine | Mason (+Build/−Med) | Mender (+Med/−Build) |
+| Building × Combat | Engineer (+Build/−Cmb) | Bruiser (+Cmb/−Build) |
+| Medicine × Combat | Medic (+Med/−Cmb) | Butcher (+Cmb/−Med) |
+
+**Temperament traits** (e.g. *Hardy* +stamina, *Volatile* breaks easier,
+*Night Owl*) are a separate, later group — they don't touch skills, so they stay
+out of this matrix. Trait effects may also touch stamina, mood tendencies, and
+mental-break behavior.
 
 ### 6.3 Generation
 A single generator produces every colonist: **name → age → background archetype
