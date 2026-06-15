@@ -166,12 +166,13 @@ button{font-family:inherit;cursor:pointer;}
     happinessApproach: 0.25,
     varietyBonus: 6,            // health/happiness lift when diet is varied (>=3 types)
 
-    // colony-health weights (sum ~1 before threat penalty)
-    chWeights: { vitals: 0.50, food: 0.16, water: 0.10, firewood: 0.10, pop: 0.14 },
+    // colony-health weights (establishment dominates so a bare camp reads low ->
+    // tense fine-grained founding that opens up as you build out the colony)
+    chWeights: { vitals: 0.25, cushion: 0.12, establish: 0.55, pop: 0.08 },
     chCushionTargetDays: 20,    // days of supply that counts as "full" cushion
 
-    // turn length: [colonyHealth <, hours]
-    turnBands: [[15, 1], [30, 24], [50, 168], [70, 720], [88, 2160], [101, 8640]],
+    // turn length: [colonyHealth <, hours]. Floor is 1 day (the sim's smallest step).
+    turnBands: [[30, 24], [50, 168], [70, 720], [88, 2160], [101, 8640]],
 
     // storage
     baseCap: 120,               // camp baseline cap per resource
@@ -460,7 +461,7 @@ button{font-family:inherit;cursor:pointer;}
     return {
       id: rng().toString(36).slice(2, 8), name: pick(rng, FIRST) + " " + pick(rng, LAST),
       age: ri(rng, 17, 55), archetype: arch.id, learns: arch.learns || 1, traits, skills,
-      stamina: 100, hunger: 80, warmth: 65, health: startH, happiness: 72,
+      stamina: 100, hunger: 70, warmth: 55, health: startH, happiness: 62,
       sick: 0, origin: origin || "founder", alive: true,
     };
   }
@@ -487,18 +488,30 @@ button{font-family:inherit;cursor:pointer;}
   }
 
   /* ===================================================== COLONY HEALTH */
+  // establishment: how built-out the colony is (0 at a bare camp, 100 fully set up)
+  function establishment(s) {
+    const B = s.buildings, any = ids => ids.some(id => B[id]);
+    let n = 0;
+    if (any(["gatherer", "hunter", "fisher", "cropfield", "orchard", "pasture"])) n++; // food production
+    if (B.well) n++;                                                                   // a water source
+    if (any(["woodhouse", "stonehouse"])) n++;                                         // real shelter
+    if (B.woodcutter || LOCATIONS[s.location].coldness < 0.4) n++;                     // heat (or warm enough)
+    if (any(["barn", "stockpile"])) n++;                                               // storage
+    return n / 5 * 100;
+  }
   function computeColonyHealth(s) {
     const live = s.colonists.filter(c => c.alive);
     if (!live.length) return 0;
-    const w = CONFIG.chWeights;
-    const vit = live.reduce((a, c) => a + (c.hunger + c.warmth + c.health + c.happiness) / 4, 0) / live.length;
-    const days = r => (s.store[r] || 0) / Math.max(1, live.length);
+    const pop = live.length, w = CONFIG.chWeights;
+    const vit = live.reduce((a, c) => a + (c.hunger + c.warmth + c.health + c.happiness) / 4, 0) / pop;
     const cush = d => clamp(d / CONFIG.chCushionTargetDays, 0, 1) * 100;
-    const foodC = cush(totalFood(s) / Math.max(1, live.length));
-    const waterC = cush(days("water"));
-    const fireC = season(s) === "Winter" ? cush(days("firewood")) : 100;
-    const popC = clamp(live.length / CONFIG.START_FOUNDERS, 0, 1.2) * 83;
-    let ch = vit * w.vitals + foodC * w.food + waterC * w.water + fireC * w.firewood + popC * w.pop;
+    const foodC = cush(totalFood(s) / pop / CONFIG.foodPerDay);
+    const waterC = cush((s.store.water || 0) / pop / CONFIG.waterPerDay);
+    const cushion = season(s) === "Winter"
+      ? (foodC + waterC + cush((s.store.firewood || 0) / (pop * CONFIG.firewoodPerDayCold * LOCATIONS[s.location].coldness))) / 3
+      : (foodC + waterC) / 2;
+    const popC = clamp(pop / 8, 0, 1) * 100;
+    const ch = w.vitals * vit + w.cushion * cushion + w.establish * establishment(s) + w.pop * popC;
     return clamp(Math.round(ch), 0, 100);
   }
 

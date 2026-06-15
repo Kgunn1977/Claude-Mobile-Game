@@ -58,24 +58,26 @@ Then the next span simulates with the dice, and the next briefing *is* the story
 *(planned later: Chronicle (full story log), Events.)*
 
 ### 2.3 Time — variable turn length (driven by Colony Health)
-**Colony Health (0–100)** is a meta-stat (distinct from a colonist's Health
-vital) that aggregates: average colonist vitals (Hunger/Warmth/Health/Happiness),
-resource cushion (days of Food/Water/Firewood), population trend, and pending
-threat. It sets how much time each turn covers:
+**Colony Health (0–100)** is a meta-stat (distinct from a colonist's Health vital)
+driven mostly by **establishment** — how built-out the colony is across five
+pillars (food production, a water source, real shelter, heat, storage) — plus
+current vitals, supply cushion (days of Food/Water/Firewood), and population. A
+**bare camp reads ~25–30**; a fully built, stocked, content colony reads **~90+**.
+It sets how much time each turn covers:
 
-| Colony Health | Turn length |
-|---|---|
-| ~0 (founding / collapse) | **1 hour** |
-| low | **1 day** |
-| mid-low | **1 week** |
-| mid-high | **1 month** |
-| high | **1 season (≈3 months)** |
-| ~100 (flourishing) | **1 year** |
+| Colony Health | Turn length | Typical state |
+|---|---|---|
+| < 30 | **1 day** | bare founding / crisis — manage closely |
+| 30–50 | **1 week** | first pillars going up |
+| 50–70 | **1 month** | most essentials secured |
+| 70–88 | **1 season** | established & stocked |
+| ≥ 88 | **1 year** | flourishing — coast |
 
-The game opens at worst health → **1-hour turns** (a desperate founding), and time
-opens up as you stabilize. Crises automatically pull you back to fine-grained
-control; calm fast-forwards. No scripted pacing — **the clock *is* the colony's
-state.** Colony Health is the master dial on the dashboard.
+The game opens at a bare camp → **~1-day turns** (a fine-grained founding), and time
+opens up as you raise each pillar. Crises pull you back to close control; an
+established colony coasts. No scripted pacing — **the clock *is* the colony's
+state.** Colony Health is the master dial on the dashboard. (1 day is the sim's
+smallest step; sub-day "hours" would mean dozens of taps per day for little gain.)
 
 **Turn length is a *maximum*, not a fixed beat.** A **(choice)** event or a sudden
 crisis interrupts the sim and opens the Briefing early — so a "1-year" turn is cut
@@ -84,13 +86,12 @@ happens the sim **auto-advances and only halts on a decision, an event, or a
 threshold crossing** (a resource hits zero, a project finishes, a colonist
 collapses or dies), so fine-grained turns never become empty clicking.
 
-**The 1-hour band is narrow and quickly escaped.** A fresh colony sits at the floor
-(no shelter, no stores) → hour-by-hour. But Colony Health climbs fast once
-immediate needs (water, a fire, food for the night) are met, so the founding
-scramble is only a handful of turns before time opens to days, then weeks. Health
-is **sensitive at the bottom** — a deliberate anti–doom-loop so a struggling colony
-can always claw back to longer turns by fixing root causes. The aggregate weights
-and band cutoffs are tuning dials.
+**The founding is fine-grained and opens up fast.** A fresh colony (just a camp)
+sits low → day-by-day. Each pillar you build (food hut, well, house, woodcutter,
+barn) lifts Colony Health and lengthens turns: ~1 day → 1 week → 1 month → 1 season
+→ 1 year as you go from camp to thriving town. Health is **sensitive at the bottom**
+— a deliberate anti–doom-loop so a struggling colony can always claw back to longer
+turns by fixing root causes. The weights and band cutoffs are tuning dials.
 
 ---
 
