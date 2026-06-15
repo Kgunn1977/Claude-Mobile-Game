@@ -197,24 +197,24 @@
   /* --------------------------------------------------------------- DECREES */
   // effects applied while active (policies) or once (actions)
   const DECREES = {
-    ration_food: { name: "Ration Food", type: "policy", consumeMult: { food: 0.6 }, happiness: -8 },
-    ration_firewood: { name: "Ration Firewood", type: "policy", consumeMult: { firewood: 0.6 }, warmth: -8, happiness: -5 },
-    ration_water: { name: "Ration Water", type: "policy", consumeMult: { water: 0.6 }, happiness: -6 },
-    austerity: { name: "Austerity", type: "policy", noAle: true, happiness: -6 },
-    overtime: { name: "Mandatory Overtime", type: "policy", effortBonus: 25, happiness: -7 },
-    day_of_rest: { name: "Day of Rest", type: "action", restAll: true, happiness: 6 },
-    prio_build: { name: "Prioritize Construction", type: "policy" },
-    prio_defense: { name: "Prioritize Defense", type: "policy" },
-    reserve: { name: "Strategic Reserve", type: "policy", reserveDays: 10, happiness: -3 },
-    feast: { name: "Feast", type: "action", happiness: 18, spend: { food: 12, ale: 6 } },
-    curfew: { name: "Curfew", type: "policy", defense: 4, happiness: -6 },
-    conscription: { name: "Conscription", type: "policy", happiness: -8 },
-    exile: { name: "Exile", type: "action", happiness: -10 },
-    open_gates: { name: "Open the Gates", type: "policy" },
-    trade_policy: { name: "Trade Policy", type: "policy" },
-    seize: { name: "Seize Hoards", type: "action", happiness: -12 },
-    quarantine: { name: "Quarantine", type: "policy", diseaseSlow: 0.5, happiness: -6 },
-    tonic: { name: "Tonic Distribution", type: "action", spend: { herbs: 8 }, healAll: 6 },
+    ration_food: { name: "Ration Food", type: "policy", consumeMult: { food: 0.6 }, happiness: -8, desc: "Eat less — stretches food, lowers spirits." },
+    ration_firewood: { name: "Ration Firewood", type: "policy", consumeMult: { firewood: 0.6 }, warmth: -8, happiness: -5, desc: "Burn less — saves fuel, but colder and glum." },
+    ration_water: { name: "Ration Water", type: "policy", consumeMult: { water: 0.6 }, happiness: -6, desc: "Stretch water — lowers spirits." },
+    austerity: { name: "Austerity", type: "policy", noAle: true, happiness: -6, desc: "Hold back the ale — lowers spirits." },
+    overtime: { name: "Mandatory Overtime", type: "policy", effortBonus: 25, happiness: -7, desc: "Everyone pushes harder — more output, drains stamina & spirits." },
+    day_of_rest: { name: "Day of Rest", type: "action", restAll: true, happiness: 6, desc: "A day off — lifts spirits." },
+    prio_build: { name: "Prioritize Construction", type: "policy", desc: "Favor building projects." },
+    prio_defense: { name: "Prioritize Defense", type: "policy", defenseBonus: 3, desc: "Favor watch & weapons (+defense)." },
+    reserve: { name: "Strategic Reserve", type: "policy", reserveDays: 10, happiness: -3, desc: "Hold a food/fuel reserve as insurance." },
+    feast: { name: "Feast", type: "action", happiness: 18, spend: { protein: 8, ale: 6 }, desc: "Spend food & ale for a big morale boost." },
+    curfew: { name: "Curfew", type: "policy", defense: 4, happiness: -6, desc: "Lockdown — safer from raids, lowers spirits." },
+    conscription: { name: "Conscription", type: "policy", happiness: -8, desc: "Press more colonists into defense." },
+    exile: { name: "Exile", type: "action", happiness: -10, desc: "Banish a colonist — frees a mouth, wounds morale." },
+    open_gates: { name: "Open the Gates", type: "policy", desc: "Welcome any wanderer who arrives." },
+    trade_policy: { name: "Trade Policy", type: "policy", desc: "Auto-trade surplus at the Trading Post." },
+    seize: { name: "Seize Hoards", type: "action", happiness: -12, desc: "Confiscate private stores — gain goods, anger people." },
+    quarantine: { name: "Quarantine", type: "policy", diseaseSlow: 0.5, happiness: -6, desc: "Isolate the sick — slows disease, lowers spirits." },
+    tonic: { name: "Tonic Distribution", type: "action", spend: { herbs: 8 }, healAll: 6, desc: "Spend herbs to heal everyone a little." },
   };
 
   /* ---------------------------------------------------------------- EVENTS */
@@ -600,6 +600,6 @@
     makeRng, newGame, advanceTurn, tickDay, computeColonyHealth, turnHours,
     startProject, effectiveSkill, skillFactor, season, totalFood, foodVariety,
     housing, housingFree, wealth, colonyDefense, makeColonist, serialize, deserialize,
-    SAVE_VERSION,
+    capFor, SAVE_VERSION,
   };
 }));

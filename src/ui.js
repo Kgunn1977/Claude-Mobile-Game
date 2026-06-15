@@ -92,7 +92,7 @@
   /* ---------------- status bar + tabs ---------------- */
   function renderStatus() {
     const seas = C.season(S);
-    $("sb-time").innerHTML = `Day ${S.day}<small>${seas} · Yr ${1 + Math.floor(S.day / 360)}</small>`;
+    $("sb-time").innerHTML = `Day ${S.day}<small>${seas} · Yr ${1 + Math.floor(S.day / 360)} · 👥 ${live().length}</small>`;
     $("ch-num").textContent = S.colonyHealth;
     $("ch-fill").style.width = S.colonyHealth + "%";
     $("adv-len").textContent = "up to " + turnLabel(C.turnHours(S.colonyHealth));
@@ -141,12 +141,11 @@
     const foodDays = (C.totalFood(S) / Math.max(1, pop) / C.CONFIG.foodPerDay);
     const waterDays = ((S.store.water || 0) / Math.max(1, pop) / C.CONFIG.waterPerDay);
     const fwDays = ((S.store.firewood || 0) / Math.max(1, pop * C.CONFIG.firewoodPerDayCold * C.LOCATIONS[S.location].coldness));
-    g.appendChild(resBox("People", pop, false));
-    g.appendChild(resBox("Food", days(foodDays), foodDays < 8));
-    g.appendChild(resBox("Water", days(waterDays), waterDays < 8));
+    const arrow = t => t > 0 ? " <span style='color:var(--good)'>▲</span>" : t < 0 ? " <span style='color:var(--danger)'>▼</span>" : "";
+    g.appendChild(resBox("Food (days)", days(foodDays) + arrow(lastBrief && lastBrief.trendFood), foodDays < 8));
+    g.appendChild(resBox("Water (days)", days(waterDays) + arrow(lastBrief && lastBrief.trendWater), waterDays < 8));
     g.appendChild(resBox("Firewood", C.season(S) === "Winter" ? days(fwDays) : "—", C.season(S) === "Winter" && fwDays < 8));
-    g.appendChild(resBox("Variety", C.foodVariety(S) + "/4", C.foodVariety(S) < 2));
-    g.appendChild(resBox("Buildings", Object.keys(S.buildings).filter(b => b !== "camp").length, false));
+    g.appendChild(resBox("Diet variety", C.foodVariety(S) + "/4", C.foodVariety(S) < 2));
     return g;
   }
   const days = d => isFinite(d) ? Math.floor(d) + "d" : "∞";
@@ -156,11 +155,17 @@
   function viewColony() {
     const f = document.createDocumentFragment();
     // resources
-    const r = el("div", "card"); r.innerHTML = "<h3>Stores</h3>";
+    const r = el("div", "card"); r.innerHTML = "<h3>Stores <span class='muted' style='text-transform:none;letter-spacing:0;font-size:11px'>— amount / cap</span></h3>";
     const grid = el("div", "res-grid");
     const groups = [["grain", "fruit", "veg", "protein"], ["water", "firewood"], ["logs", "stone", "iron", "coal"], ["herbs", "leather", "wool"], ["tools", "coats", "ale", "weapons", "ammo"]];
-    groups.flat().forEach(res => { const v = S.store[res] || 0; if (v < 0.5 && !["water", "logs", "tools"].includes(res)) return; grid.appendChild(resBox(cap2(res), Math.floor(v), false)); });
-    r.appendChild(grid); f.appendChild(r);
+    groups.flat().forEach(res => {
+      const v = S.store[res] || 0; if (v < 0.5 && !["water", "logs", "tools"].includes(res)) return;
+      const cap = C.capFor(S, res); const full = v >= cap * 0.98;
+      grid.appendChild(resBox(cap2(res), `${Math.floor(v)}<span class="muted" style="font-weight:400">/${cap}${full ? " ⛔" : ""}</span>`, false));
+    });
+    r.appendChild(grid);
+    r.appendChild(el("div", "muted", "<span style='font-size:11px'>⛔ at cap — overflow is wasted; build a Stockpile/Barn for more.</span>"));
+    f.appendChild(r);
 
     // projects
     const pr = el("div", "card"); pr.innerHTML = "<h3>Construction</h3>";
@@ -184,7 +189,8 @@
     Object.keys(C.DECREES).forEach(id => {
       const d = C.DECREES[id]; const on = !!S.decrees[id];
       const row = el("div", "row");
-      row.innerHTML = `<div class="nm"><b>${d.name}</b> <span class="tag">${d.type}</span><div class="s">${d.happiness ? (d.happiness < 0 ? d.happiness + " goodwill" : "+" + d.happiness) : ""}</div></div>`;
+      const cost = d.happiness ? ` <span style="color:${d.happiness < 0 ? "var(--danger)" : "var(--good)"}">(${d.happiness > 0 ? "+" : ""}${d.happiness} spirits)</span>` : "";
+      row.innerHTML = `<div class="nm"><b>${d.name}</b> <span class="tag">${d.type}</span><div class="s">${d.desc || ""}${cost}</div></div>`;
       const btn = el("button", "btn sm", d.type === "action" ? "Do it" : (on ? "On" : "Off"));
       if (d.type !== "action" && on) btn.classList.add("primary");
       btn.onclick = () => toggleDecree(id);
@@ -217,7 +223,7 @@
       if (gate <= 0) return;
       const afford = Object.keys(b.build.mats).every(r => (S.store[r] || 0) >= b.build.mats[r]);
       const mats = Object.entries(b.build.mats).map(([r, n]) => `${n} ${cap2(r)}`).join(", ") || "no materials";
-      html += `<div class="opt ${afford ? "" : "disabled"}" data-id="${id}"><div class="oi">${b.name}<small>${b.build.work}w · ${mats}${b.skill ? " · " + cap2(b.skill) : ""}</small></div><button class="btn sm ${afford ? "primary" : ""}" ${afford ? "" : "disabled"}>Build</button></div>`;
+      html += `<div class="opt ${afford ? "" : "disabled"}" data-id="${id}"><div class="oi">${b.name} <span class="muted" style="font-size:11px">— ${defOutputText(b)}</span><small>${b.build.work}w · ${mats}${b.skill ? " · " + cap2(b.skill) : ""}</small></div><button class="btn sm ${afford ? "primary" : ""}" ${afford ? "" : "disabled"}>Build</button></div>`;
     });
     openSheet(html);
     $("sheet").querySelectorAll(".opt").forEach(o => { const id = o.dataset.id; const btn = o.querySelector("button"); if (!btn.disabled) btn.onclick = () => { if (C.startProject(S, id)) { toast("Construction begun: " + C.BUILDINGS[id].name); closeSheet(); saveGame(); render(); } }; });
@@ -280,20 +286,40 @@
     jobs.forEach(([id, def, manual]) => {
       const skl = def.skill;
       const fit = skl ? ` · ${cap2(skl)} ${C.effectiveSkill(c, skl)}` : "";
-      html += `<div class="opt" data-id="${id}"><div class="oi">${jobName(id)}<small>${manual ? "anywhere" : "building"}${fit}</small></div><span class="tag">pick</span></div>`;
+      html += `<div class="opt" data-id="${id}"><div class="oi">${jobName(id)}<small>${defOutputText(def)}${fit}</small></div><span class="tag">pick</span></div>`;
     });
     openSheet(html);
     $("sheet").querySelectorAll(".opt").forEach(o => o.onclick = () => { S.assignments[c.id].job = o.dataset.id; closeSheet(); saveGame(); render(); });
   }
   function jobName(id) { return (C.MANUAL_JOBS[id] && C.MANUAL_JOBS[id].name) || (C.BUILDINGS[id] && C.BUILDINGS[id].name) || id; }
+  function defOutputText(def) {
+    if (!def) return "";
+    if (def.produce) return "makes " + Object.keys(def.produce).map(cap2).join(", ");
+    if (def.recipe) return Object.keys(def.recipe.in).map(cap2).join("+") + " → " + Object.keys(def.recipe.out).map(cap2).join(", ");
+    if (def.isBuild) return "builds projects";
+    if (def.heal) return "tends the sick";
+    if (def.defense) return "defends (+" + def.defense + ")";
+    if (def.housing) return "+" + def.housing + " housing";
+    if (def.amenity && def.amenity.happiness) return "raises happiness";
+    if (def.cap) return "storage capacity";
+    if (def.trade) return "enables trade";
+    if (def.learnMult) return "faster learning";
+    if (def.scout) return "scouts the area";
+    if (def.effort === 0) return "recovers stamina";
+    return "";
+  }
 
   /* ---------------- advance ---------------- */
   function doAdvance() {
     if (S.over) return;
+    const p0 = live().length || 1;
+    const f0 = C.totalFood(S) / p0, w0 = (S.store.water || 0) / p0;
     lastBrief = C.advanceTurn(S);
+    const p1 = live().length || 1;
+    lastBrief.trendFood = Math.sign(Math.round(C.totalFood(S) / p1 - f0));
+    lastBrief.trendWater = Math.sign(Math.round((S.store.water || 0) / p1 - w0));
     saveGame();
     page = "briefing"; render();
-    if (S.over) { /* stay on briefing */ }
   }
 
   /* ---------------- sheet / toast ---------------- */
