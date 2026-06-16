@@ -1,7 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
 import 'version.dart';
 
 class LatestRelease {
@@ -11,8 +9,9 @@ class LatestRelease {
   final String apkUrl;
 }
 
-/// Checks the public GitHub Releases for a newer build and downloads the APK.
-/// (Repo is public, so no auth needed.)
+/// Checks the public GitHub Releases for a newer build. (Repo is public, so no
+/// auth.) The actual APK download is handed to the system browser/downloader so
+/// it survives the app losing focus.
 class UpdateService {
   Future<LatestRelease?> check() async {
     final r = await http.get(Uri.parse(kRepoApiLatest),
@@ -31,23 +30,5 @@ class UpdateService {
     }
     if (apk == null) return null;
     return LatestRelease(build, (j['name'] ?? tag).toString(), apk);
-  }
-
-  /// Streams the APK to a file, reporting 0..1 progress.
-  Future<File> download(String url, void Function(double) onProgress) async {
-    final dir =
-        await getExternalStorageDirectory() ?? await getTemporaryDirectory();
-    final file = File('${dir.path}/colony-latest.apk');
-    final resp = await http.Client().send(http.Request('GET', Uri.parse(url)));
-    final total = resp.contentLength ?? 0;
-    var got = 0;
-    final sink = file.openWrite();
-    await for (final chunk in resp.stream) {
-      sink.add(chunk);
-      got += chunk.length;
-      if (total > 0) onProgress(got / total);
-    }
-    await sink.close();
-    return file;
   }
 }

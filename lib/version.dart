@@ -1,6 +1,6 @@
 /// Bump kAppVersion for humans; kBuildNumber is stamped by CI with the GitHub
 /// Actions run number so the app can tell if a newer build exists.
-const String kAppVersion = '0.4.1 — Stage 2';
+const String kAppVersion = '0.4.2 — Stage 2';
 const int kBuildNumber = 0; // overwritten in CI
 
 const String kReleasesUrl =

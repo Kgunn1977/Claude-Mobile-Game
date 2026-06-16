@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:open_filex/open_filex.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../update_service.dart';
 import '../version.dart';
 
-/// One-tap updater: checks GitHub Releases, and if a newer build exists,
-/// downloads the APK and hands it to Android's installer.
+/// Checks GitHub Releases and, if a newer build exists, hands the APK to the
+/// system browser to download (in the background — you can switch apps), then
+/// you tap the finished file to install.
 class UpdateButton extends StatefulWidget {
   const UpdateButton({super.key});
   @override
   State<UpdateButton> createState() => _UpdateButtonState();
 }
 
-enum _S { idle, checking, upToDate, available, downloading, opening, error }
+enum _S { idle, checking, upToDate, available, launched, error }
 
 class _UpdateButtonState extends State<UpdateButton> {
   final _svc = UpdateService();
   _S _s = _S.idle;
   LatestRelease? _rel;
-  double _progress = 0;
   String _msg = '';
 
   Future<void> _check() async {
@@ -37,7 +37,7 @@ class _UpdateButtonState extends State<UpdateButton> {
       } else {
         setState(() => _s = _S.upToDate);
       }
-    } catch (e) {
+    } catch (_) {
       setState(() {
         _s = _S.error;
         _msg = 'Check failed.';
@@ -45,36 +45,21 @@ class _UpdateButtonState extends State<UpdateButton> {
     }
   }
 
-  Future<void> _downloadAndInstall() async {
-    setState(() {
-      _s = _S.downloading;
-      _progress = 0;
-    });
-    try {
-      final file =
-          await _svc.download(_rel!.apkUrl, (p) => setState(() => _progress = p));
-      setState(() => _s = _S.opening);
-      await OpenFilex.open(file.path); // Android install prompt
-      setState(() => _s = _S.available); // back to available if they cancel
-    } catch (e) {
-      setState(() {
-        _s = _S.error;
-        _msg = 'Download failed.';
-      });
-    }
+  Future<void> _download() async {
+    await launchUrl(Uri.parse(_rel!.apkUrl),
+        mode: LaunchMode.externalApplication);
+    setState(() => _s = _S.launched);
   }
 
   @override
   Widget build(BuildContext context) {
-    final (label, onTap, busy) = switch (_s) {
-      _S.idle => ('Check for updates', _check, false),
-      _S.checking => ('Checking…', null, true),
-      _S.upToDate => ("You're on the latest (Build $kBuildNumber)", _check, false),
-      _S.available => ('⬇ Install Build ${_rel!.build}', _downloadAndInstall, false),
-      _S.downloading =>
-        ('Downloading ${(_progress * 100).floor()}%', null, true),
-      _S.opening => ('Opening installer…', null, true),
-      _S.error => ('$_msg  Tap to retry', _check, false),
+    final (label, onTap, busy, primary) = switch (_s) {
+      _S.idle => ('Check for updates', _check, false, false),
+      _S.checking => ('Checking…', null, true, false),
+      _S.upToDate => ("You're on the latest (Build $kBuildNumber)", _check, false, false),
+      _S.available => ('⬇ Download Build ${_rel!.build}', _download, false, true),
+      _S.launched => ('Downloading… check again', _check, false, false),
+      _S.error => ('$_msg  Tap to retry', _check, false, false),
     };
 
     return Column(
@@ -85,47 +70,35 @@ class _UpdateButtonState extends State<UpdateButton> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
             decoration: BoxDecoration(
-              color: _s == _S.available
-                  ? const Color(0xFF9ED35A)
-                  : const Color(0xFF1D2618),
+              color: primary ? const Color(0xFF9ED35A) : const Color(0xFF1D2618),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: const Color(0xFF9ED35A)),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (busy)
-                  const Padding(
-                    padding: EdgeInsets.only(right: 10),
-                    child: SizedBox(
-                        width: 14,
-                        height: 14,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Color(0xFF9ED35A))),
-                  ),
-                Text(label,
-                    style: TextStyle(
-                        color: _s == _S.available
-                            ? Colors.black
-                            : const Color(0xFF9ED35A),
-                        fontWeight: FontWeight.w700)),
-              ],
-            ),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              if (busy)
+                const Padding(
+                  padding: EdgeInsets.only(right: 10),
+                  child: SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Color(0xFF9ED35A))),
+                ),
+              Text(label,
+                  style: TextStyle(
+                      color: primary ? Colors.black : const Color(0xFF9ED35A),
+                      fontWeight: FontWeight.w700)),
+            ]),
           ),
         ),
-        if (_s == _S.downloading)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: LinearProgressIndicator(
-                value: _progress,
-                backgroundColor: const Color(0xFF1D2618),
-                color: const Color(0xFF9ED35A)),
-          ),
-        if (_s == _S.opening || _s == _S.available && _progress > 0)
+        if (_s == _S.launched)
           const Padding(
-            padding: EdgeInsets.only(top: 6),
-            child: Text('If install is blocked, allow “install unknown apps”.',
-                style: TextStyle(color: Colors.white38, fontSize: 12)),
+            padding: EdgeInsets.only(top: 8),
+            child: Text(
+                'Downloading in your browser — switch apps freely. When it '
+                'finishes, open the file to install (allow “install unknown '
+                'apps” once if asked).',
+                style: TextStyle(color: Colors.white54, fontSize: 12)),
           ),
       ],
     );
