@@ -69,31 +69,85 @@ class ColonyState extends ChangeNotifier {
     for (final c in colonists) {
       c.job = null;
     }
-    final remaining = {for (final r in Role.values) r: jobCounts[r]!};
-    final free = List<Colonist>.from(colonists);
-    // Global best-fit: each round, fill the single open slot whose best
-    // available colonist is the highest-skilled, so every job goes to the most
-    // skilled person available for it (not order-dependent).
-    while (free.isNotEmpty) {
-      Colonist? bestC;
-      Role? bestR;
-      int bestSkill = -1;
-      for (final c in free) {
-        for (final r in Role.values) {
-          if (remaining[r]! <= 0) continue;
-          final s = c.skills[r] ?? 0;
-          if (s > bestSkill) {
-            bestSkill = s;
-            bestC = c;
-            bestR = r;
+    // Expand the headcounts into individual job slots.
+    final slots = <Role>[];
+    for (final r in Role.values) {
+      for (int i = 0; i < jobCounts[r]!; i++) {
+        slots.add(r);
+      }
+    }
+    final p = colonists.length, s = slots.length;
+    if (p == 0 || s == 0) return;
+
+    // Optimal assignment (max total skill) via the Hungarian algorithm.
+    // Square cost matrix p×p: real slots in the first `s` columns, the rest are
+    // "idle" columns (cost as if skill 0). Minimise cost = 10 - skill.
+    final n = p;
+    final cost = List.generate(
+      n,
+      (i) => List.generate(n, (j) {
+        if (j < s) return 10 - (colonists[i].skills[slots[j]] ?? 0);
+        return 10; // idle
+      }),
+    );
+    final rowToCol = _hungarian(cost);
+    for (int i = 0; i < p; i++) {
+      final j = rowToCol[i];
+      if (j >= 0 && j < s) colonists[i].job = slots[j];
+    }
+  }
+
+  /// Classic O(n³) Hungarian assignment (minimisation). Returns, for each row
+  /// (colonist), the column it's assigned to.
+  static List<int> _hungarian(List<List<int>> a) {
+    final n = a.length;
+    const inf = 1 << 30;
+    final u = List.filled(n + 1, 0);
+    final v = List.filled(n + 1, 0);
+    final pcol = List.filled(n + 1, 0); // row assigned to each column
+    final way = List.filled(n + 1, 0);
+    for (int i = 1; i <= n; i++) {
+      pcol[0] = i;
+      int j0 = 0;
+      final minv = List.filled(n + 1, inf);
+      final used = List.filled(n + 1, false);
+      do {
+        used[j0] = true;
+        final i0 = pcol[j0];
+        int delta = inf, j1 = -1;
+        for (int j = 1; j <= n; j++) {
+          if (used[j]) continue;
+          final cur = a[i0 - 1][j - 1] - u[i0] - v[j];
+          if (cur < minv[j]) {
+            minv[j] = cur;
+            way[j] = j0;
+          }
+          if (minv[j] < delta) {
+            delta = minv[j];
+            j1 = j;
           }
         }
-      }
-      if (bestC == null) break; // no open slots left
-      bestC.job = bestR;
-      remaining[bestR!] = remaining[bestR]! - 1;
-      free.remove(bestC);
+        for (int j = 0; j <= n; j++) {
+          if (used[j]) {
+            u[pcol[j]] += delta;
+            v[j] -= delta;
+          } else {
+            minv[j] -= delta;
+          }
+        }
+        j0 = j1;
+      } while (pcol[j0] != 0);
+      do {
+        final j1 = way[j0];
+        pcol[j0] = pcol[j1];
+        j0 = j1;
+      } while (j0 != 0);
     }
+    final rowToCol = List.filled(n, -1);
+    for (int j = 1; j <= n; j++) {
+      if (pcol[j] >= 1) rowToCol[pcol[j] - 1] = j - 1;
+    }
+    return rowToCol;
   }
 
   // --- building placement ---

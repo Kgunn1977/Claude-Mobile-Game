@@ -1,5 +1,5 @@
 /// Bump this each build so the in-app "Updates" panel shows what's installed.
-const String kAppVersion = '0.3.0 — Stage 2';
+const String kAppVersion = '0.3.1 — Stage 2';
 
 /// Where the newest installable APK lives (GitHub Releases, latest).
 const String kReleasesUrl =
