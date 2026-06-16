@@ -39,20 +39,25 @@ jobs:
       - name: Restore authored files
         run: git checkout -- pubspec.yaml analysis_options.yaml lib
 
-      # url_launcher needs an intent <queries> entry on Android 11+.
-      - name: Enable url_launcher queries
+      - name: Stamp build number
+        run: sed -i "s/kBuildNumber = 0/kBuildNumber = ${{ github.run_number }}/" lib/version.dart
+
+      # Add internet + install-packages permissions and the url_launcher queries.
+      - name: Patch Android manifest
         run: |
           python3 - <<'PY'
           import re
           p = 'android/app/src/main/AndroidManifest.xml'
           s = open(p).read()
-          if '<queries>' not in s:
-              s = re.sub(
-                  r'(<manifest\b[^>]*>)',
-                  r'\1\n    <queries><intent><action android:name="android.intent.action.VIEW"/><data android:scheme="https"/></intent></queries>',
-                  s, count=1)
+          if 'REQUEST_INSTALL_PACKAGES' not in s:
+              inject = (
+                  '\n    <uses-permission android:name="android.permission.INTERNET"/>'
+                  '\n    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>'
+                  '\n    <queries><intent><action android:name="android.intent.action.VIEW"/>'
+                  '<data android:scheme="https"/></intent></queries>')
+              s = re.sub(r'(<manifest\b[^>]*>)', r'\1' + inject, s, count=1)
               open(p, 'w').write(s)
-              print('queries added')
+              print('manifest patched')
           PY
 
       - name: Resolve dependencies

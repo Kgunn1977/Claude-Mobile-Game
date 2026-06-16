@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../model/types.dart';
 import '../state/colony_state.dart';
 import '../version.dart';
+import 'update_button.dart';
 
 /// Data screen: Banished-style job assignment (headcount per role) plus a
 /// colonist roster. Rebuilds whenever the colony state changes.
@@ -43,29 +44,20 @@ class DataPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 _header('App'),
-                Text('Version $kAppVersion',
+                Text('Version $kAppVersion  ·  Build $kBuildNumber',
                     style: const TextStyle(color: Colors.white70)),
+                const SizedBox(height: 10),
+                const UpdateButton(),
                 const SizedBox(height: 10),
                 GestureDetector(
                   onTap: () => launchUrl(Uri.parse(kReleasesUrl),
                       mode: LaunchMode.externalApplication),
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
-                    decoration: BoxDecoration(
-                        color: const Color(0xFF1D2618),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFF9ED35A))),
-                    child: const Text('⬇  Get the latest build',
-                        style: TextStyle(
-                            color: Color(0xFF9ED35A),
-                            fontWeight: FontWeight.w700)),
-                  ),
+                  child: const Text('View releases in browser',
+                      style: TextStyle(
+                          color: Colors.white38,
+                          fontSize: 12,
+                          decoration: TextDecoration.underline)),
                 ),
-                const SizedBox(height: 6),
-                const Text(
-                    'Opens the Releases page — download & install the newest APK.',
-                    style: TextStyle(color: Colors.white38, fontSize: 12)),
               ],
             );
           },
