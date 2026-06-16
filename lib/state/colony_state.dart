@@ -79,15 +79,27 @@ class ColonyState extends ChangeNotifier {
     final p = colonists.length, s = slots.length;
     if (p == 0 || s == 0) return;
 
-    // Optimal assignment (max total skill) via the Hungarian algorithm.
-    // Square cost matrix p×p: real slots in the first `s` columns, the rest are
-    // "idle" columns (cost as if skill 0). Minimise cost = 10 - skill.
+    // Each colonist's "best" role (their top skill) — used to prefer specialists.
+    final bestRole = <int, Role>{};
+    for (int i = 0; i < p; i++) {
+      final sk = colonists[i].skills;
+      bestRole[i] =
+          Role.values.reduce((a, b) => (sk[a] ?? 0) >= (sk[b] ?? 0) ? a : b);
+    }
+    const specBonus = 4; // a job goes to whoever it's the *best* fit for
+
+    // Optimal assignment maximising (skill + specialisation bonus) across all
+    // roles at once, via the Hungarian algorithm. Square p×p cost matrix: real
+    // slots in the first `s` columns, the rest are "idle". Minimise cost.
     final n = p;
     final cost = List.generate(
       n,
       (i) => List.generate(n, (j) {
-        if (j < s) return 10 - (colonists[i].skills[slots[j]] ?? 0);
-        return 10; // idle
+        if (j >= s) return 20; // idle column
+        final r = slots[j];
+        final value =
+            (colonists[i].skills[r] ?? 0) + (bestRole[i] == r ? specBonus : 0);
+        return 20 - value;
       }),
     );
     final rowToCol = _hungarian(cost);
