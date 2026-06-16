@@ -1,51 +1,54 @@
-# Hollow Frontier
+# Colony Game
 
-A turn-based **colony-leadership story generator** for mobile. Society has
-collapsed; you lead a small band to a hidden corner of North America and give the
-orders — your people, their flaws, and the dice make the story.
+A mobile **colony-management survival builder** (Banished spine + light RimWorld
+people + ONI-style resource accounting), built **Android-first** with
+**Flutter + Flame**. All development is phone-only: builds run in the cloud via
+GitHub Actions and produce a debug APK you install by hand.
 
-> Inspired by **Banished** (the resource economy), **RimWorld** (emergent,
-> trait-driven drama), and **D&D** (d20 resolution). Runs offline, no build step.
+> Full design lives in **`docs/`** — start with `docs/project-overview.md`
+> (the consolidated source of truth), then `vision.md`, `tech-stack.md`, and the
+> staged build plan. `banished.md` / `rimworld.md` / `oxygen-not-included.md`
+> are deep research for when we grow past v1.
 
-## Play it
-Open **`play.html`** in any browser — it's a single self-contained file (download
-it from GitHub onto your phone and open it). Progress auto-saves to the device.
+## How to get the app on your phone
 
-For development, `index.html` loads the same game from `src/`.
+1. Push triggers a build automatically. On **github.com**, open the repo →
+   **Actions** tab → the latest **build-apk** run.
+2. Wait for the green check, then open the run and download the
+   **`app-debug-apk`** artifact (a `.zip`; extract the `.apk`).
+3. Open the `.apk` on your phone to install (allow "install unknown apps" once
+   if prompted — debug APKs need no Play Store account).
 
-## What's here
+## Stage status
 
-| Path | Purpose |
-|------|---------|
-| `DESIGN.md` | The full locked design spec |
-| `src/core.js` | Data-driven simulation engine (economy, colonists, turns) — runs in Node *and* the browser |
-| `src/ui.js` | Mobile UI controller (setup, the four pages, assignments, advance) |
-| `index.html` | App shell + styling |
-| `build.js` | Inlines core + ui into the single-file `play.html` |
-| `play.html` | **The game** — single-file, offline |
-| `test/validate.js` | Content integrity + runtime invariants |
-| `sim/harness.js` | Headless balance harness: autopilot bots + Monte-Carlo sweep |
-| `prototype-signal/` | An earlier text-adventure prototype, kept for reference |
+- **Stage 0 — Pipeline:** ✅ Flutter+Flame project + GitHub Actions debug-APK build.
+- **Stage 1 — "It opens":** ✅ launches to a swipe-paged UI (Map | Data); a
+  512×512 meadow you can **pan & pinch-zoom**; a **simulation clock**
+  (1 day = 10 real min at 1×) with **Pause / 1× / 2× / 5×** and **auto-pause**
+  when the app loses focus.
+- **Stage 2+:** place buildings + assign jobs → the economy → readouts + save
+  (see `docs/project-overview.md` §4).
 
-## The loop
-- Turns are **variable length, set by Colony Health** — a struggling colony is
-  managed hour-by-hour; a thriving one coasts a year at a time.
-- Each turn opens on the **Briefing** (what happened). Set **standing job
-  assignments** and **decrees**, then **Advance**.
-- Survive the seasons: food (4 diet types), water, firewood for winter, defense
-  against raids — and keep your people fed, warm, healthy, and content.
+## Project layout
 
-## Develop / test
-```bash
-node test/validate.js     # content + invariants (must pass)
-node sim/harness.js        # balance sweep across locations
-node build.js              # regenerate play.html
 ```
-The harness is the balance safety net: a competent autopilot bot should survive,
-a naive one should fail. Re-run it after any change to numbers or content.
+lib/
+  main.dart            app shell: swipe pages (Map|Data) + lifecycle auto-pause
+  game/colony_game.dart Flame game: camera pan/zoom + simulation clock
+  game/meadow.dart      batched 512×512 meadow + grid overlay
+  ui/map_page.dart      map + day readout + speed controls
+  ui/data_page.dart     placeholder data page
+.github/workflows/build.yml   cloud build → app-debug-apk artifact
+docs/                  design + research
+```
 
-## Status
-Playable v1: setup (location + founder rerolls), the full economy, colonists with
-skills/traits/vitals, buildings & projects, decrees, seasons, events, raids, and
-save/load. Deferred: interactive event choices, births, conquest, trade depth,
-and the Chronicle screen.
+The Android/iOS platform folders are **generated in CI** (`flutter create`), so
+they aren't committed — only `pubspec.yaml`, `lib/`, and the workflow are.
+
+## Tech notes
+
+- Stack is locked: **Flutter (Dart) + Flame**, GitHub Actions, free tooling only.
+- Keep systems **small, isolated, well-commented** — this codebase is edited by
+  an AI one system at a time.
+- The simulation runs on Flame's game loop, separate from the Flutter UI, and
+  advances only while the app is foregrounded.

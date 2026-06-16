@@ -1,0 +1,51 @@
+name: build-apk
+
+# Build a debug APK on every push and on manual trigger, and upload it as an
+# artifact the user downloads from the Actions run page (no signing needed).
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java (for Android Gradle)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Flutter version
+        run: flutter --version
+
+      # We only commit pubspec + lib + analysis_options. Generate the Android
+      # platform folder here, then restore our authored files in case the
+      # scaffolder touched them, so our code + flame dependency always win.
+      - name: Generate Android scaffold
+        run: flutter create --platforms=android --org com.example --project-name colony_game .
+
+      - name: Restore authored files
+        run: git checkout -- pubspec.yaml analysis_options.yaml lib
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Build debug APK
+        run: flutter build apk --debug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error

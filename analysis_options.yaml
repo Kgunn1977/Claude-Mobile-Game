@@ -1,0 +1,5 @@
+# Minimal analyzer config (no external lint package, so cloud builds never block
+# on a missing dev dependency). Tighten later if we want.
+analyzer:
+  errors:
+    todo: ignore
