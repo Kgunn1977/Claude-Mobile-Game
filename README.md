@@ -26,8 +26,12 @@ GitHub Actions and produce a debug APK you install by hand.
   512×512 meadow you can **pan & pinch-zoom**; a **simulation clock**
   (1 day = 10 real min at 1×) with **Pause / 1× / 2× / 5×** and **auto-pause**
   when the app loses focus.
-- **Stage 2+:** place buildings + assign jobs → the economy → readouts + save
-  (see `docs/project-overview.md` §4).
+- **Stage 2 — Place + assign:** ✅ 6 buildings placeable on the grid
+  (tap-to-place with footprint/overlap validation); resource nodes seeded on the
+  map; Banished-style **headcount job assignment** + colonist roster on the Data
+  page. *(Economy runs in Stage 3; placement is free for now.)*
+- **Stage 3+:** the economy (harvest, conversions, calories, heating) → readouts
+  + save (see `docs/project-overview.md` §4).
 
 ## Project layout
 

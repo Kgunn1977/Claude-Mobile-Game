@@ -1,6 +1,8 @@
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import '../state/colony_state.dart';
+import 'entities_layer.dart';
 import 'meadow.dart';
 
 /// Stage 1 game: a pan/zoomable meadow and a simulation clock.
@@ -8,6 +10,10 @@ import 'meadow.dart';
 /// day are exposed via ValueNotifiers so lightweight Flutter overlays can show
 /// them without rebuilding the whole tree.
 class ColonyGame extends FlameGame {
+  ColonyGame(this.state);
+
+  final ColonyState state;
+
   static const int gridTiles = 512;
   static const double tileSize = 16.0;
   static const double secondsPerDay = 600.0; // 1 in-game day = 10 real min at 1x
@@ -35,9 +41,14 @@ class ColonyGame extends FlameGame {
   @override
   Future<void> onLoad() async {
     world.add(MeadowComponent(gridTiles: gridTiles, tileSize: tileSize));
+    world.add(EntitiesLayer(state));
     camera.viewfinder.zoom = 0.5;
     camera.viewfinder.position = Vector2(fieldSize / 2, fieldSize / 2);
   }
+
+  /// Screen point (from a Flutter gesture) → world position, for tap-to-place.
+  Vector2 screenToWorld(Offset p) =>
+      camera.globalToLocal(Vector2(p.dx, p.dy));
 
   @override
   void update(double dt) {

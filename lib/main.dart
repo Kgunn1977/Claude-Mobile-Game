@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'game/colony_game.dart';
+import 'state/colony_state.dart';
 import 'ui/map_page.dart';
 import 'ui/data_page.dart';
 
@@ -29,7 +30,8 @@ class RootShell extends StatefulWidget {
 }
 
 class _RootShellState extends State<RootShell> with WidgetsBindingObserver {
-  late final ColonyGame _game = ColonyGame();
+  late final ColonyState _state = ColonyState();
+  late final ColonyGame _game = ColonyGame(_state);
   final PageController _pages = PageController();
   final ValueNotifier<int> _page = ValueNotifier<int>(0);
 
@@ -66,7 +68,10 @@ class _RootShellState extends State<RootShell> with WidgetsBindingObserver {
           PageView(
             controller: _pages,
             onPageChanged: (i) => _page.value = i,
-            children: [MapPage(game: _game), const DataPage()],
+            children: [
+              MapPage(game: _game, state: _state),
+              DataPage(state: _state),
+            ],
           ),
           // Reliable page tabs (top-right) — paging also works by swiping the
           // Data page; tabs guarantee navigation even while the map eats drags.
