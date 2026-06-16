@@ -1,10 +1,13 @@
 name: build-apk
 
-# Build a debug APK on every push and on manual trigger, and upload it as an
-# artifact the user downloads from the Actions run page (no signing needed).
+# Build a debug APK on every push, upload it as an artifact, and publish it as a
+# GitHub Release so the in-app "Get the latest build" button can reach it.
 on:
   push:
   workflow_dispatch:
+
+permissions:
+  contents: write # needed to publish releases
 
 jobs:
   build:
@@ -28,14 +31,29 @@ jobs:
       - name: Flutter version
         run: flutter --version
 
-      # We only commit pubspec + lib + analysis_options. Generate the Android
-      # platform folder here, then restore our authored files in case the
-      # scaffolder touched them, so our code + flame dependency always win.
+      # Generate the Android platform folder, then restore our authored files so
+      # our code + dependencies always win.
       - name: Generate Android scaffold
         run: flutter create --platforms=android --org com.example --project-name colony_game .
 
       - name: Restore authored files
         run: git checkout -- pubspec.yaml analysis_options.yaml lib
+
+      # url_launcher needs an intent <queries> entry on Android 11+.
+      - name: Enable url_launcher queries
+        run: |
+          python3 - <<'PY'
+          import re
+          p = 'android/app/src/main/AndroidManifest.xml'
+          s = open(p).read()
+          if '<queries>' not in s:
+              s = re.sub(
+                  r'(<manifest\b[^>]*>)',
+                  r'\1\n    <queries><intent><action android:name="android.intent.action.VIEW"/><data android:scheme="https"/></intent></queries>',
+                  s, count=1)
+              open(p, 'w').write(s)
+              print('queries added')
+          PY
 
       - name: Resolve dependencies
         run: flutter pub get
@@ -49,3 +67,11 @@ jobs:
           name: app-debug-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
+
+      - name: Publish release (latest installable APK)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: Build ${{ github.run_number }}
+          body: ${{ github.event.head_commit.message }}
+          files: build/app/outputs/flutter-apk/app-debug.apk

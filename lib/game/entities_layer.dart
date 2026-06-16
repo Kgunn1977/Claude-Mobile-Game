@@ -37,5 +37,22 @@ class EntitiesLayer extends Component {
       canvas.drawRect(rect, Paint()..color = d.color);
       canvas.drawRect(rect, _stroke);
     }
+
+    // placement ghost (green = valid, red = blocked)
+    final g = state.ghostType;
+    if (g != null) {
+      final d = kBuildings[g]!;
+      final rect = Rect.fromLTWH(
+          state.ghostX * t, state.ghostY * t, d.w * t, d.h * t);
+      final ok = state.canPlace(g, state.ghostX, state.ghostY);
+      canvas.drawRect(
+          rect, Paint()..color = (ok ? Colors.green : Colors.red).withOpacity(0.45));
+      canvas.drawRect(
+          rect,
+          Paint()
+            ..color = Colors.white
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2.0);
+    }
   }
 }

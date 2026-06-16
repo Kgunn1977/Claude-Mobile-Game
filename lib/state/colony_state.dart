@@ -31,6 +31,22 @@ class ColonyState extends ChangeNotifier {
   final List<ResourceNode> nodes = [];
   final Map<Role, int> jobCounts = {for (final r in Role.values) r: 0};
 
+  // pending placement "ghost" the player drags before committing
+  BuildingType? ghostType;
+  int ghostX = 0, ghostY = 0;
+
+  void setGhost(BuildingType t, int x, int y) {
+    ghostType = t;
+    ghostX = x;
+    ghostY = y;
+    notifyListeners();
+  }
+
+  void clearGhost() {
+    ghostType = null;
+    notifyListeners();
+  }
+
   ColonyState() {
     _seed();
   }
@@ -53,18 +69,30 @@ class ColonyState extends ChangeNotifier {
     for (final c in colonists) {
       c.job = null;
     }
-    final pool = List<Colonist>.from(colonists);
-    for (final r in Role.values) {
-      var need = jobCounts[r]!;
-      // best-skilled free colonists fill each role first
-      pool.sort((a, b) => (b.skills[r] ?? 0).compareTo(a.skills[r] ?? 0));
-      for (final c in pool) {
-        if (need <= 0) break;
-        if (c.job == null) {
-          c.job = r;
-          need--;
+    final remaining = {for (final r in Role.values) r: jobCounts[r]!};
+    final free = List<Colonist>.from(colonists);
+    // Global best-fit: each round, fill the single open slot whose best
+    // available colonist is the highest-skilled, so every job goes to the most
+    // skilled person available for it (not order-dependent).
+    while (free.isNotEmpty) {
+      Colonist? bestC;
+      Role? bestR;
+      int bestSkill = -1;
+      for (final c in free) {
+        for (final r in Role.values) {
+          if (remaining[r]! <= 0) continue;
+          final s = c.skills[r] ?? 0;
+          if (s > bestSkill) {
+            bestSkill = s;
+            bestC = c;
+            bestR = r;
+          }
         }
       }
+      if (bestC == null) break; // no open slots left
+      bestC.job = bestR;
+      remaining[bestR!] = remaining[bestR]! - 1;
+      free.remove(bestC);
     }
   }
 

@@ -50,6 +50,12 @@ class ColonyGame extends FlameGame {
   Vector2 screenToWorld(Offset p) =>
       camera.globalToLocal(Vector2(p.dx, p.dy));
 
+  /// Tile coordinates at the centre of the current view (where a new ghost drops).
+  (int, int) cameraCenterTile() {
+    final c = camera.viewfinder.position;
+    return ((c.x / tileSize).floor(), (c.y / tileSize).floor());
+  }
+
   @override
   void update(double dt) {
     super.update(dt);
